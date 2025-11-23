@@ -294,12 +294,13 @@
                 this.color = color;
                 this.isPlayer = isPlayer;
                 this.alive = true;
-                this.angle = Math.random() * Math.PI * 2;
+                this.angle = isPlayer ? 0 : Math.random() * Math.PI * 2; // Player starts facing right
                 this.targetAngle = this.angle;
                 this.speed = SNAKE_SPEED;
                 this.radius = SNAKE_RADIUS;
                 this.score = 0;
                 this.eatenFood = [];
+                this.targetLength = 10; // Track intended length for smooth growth
 
                 // Initialize segments
                 const initialLength = 10;
@@ -320,7 +321,7 @@
             }
 
             get length() {
-                return this.segments.length;
+                return this.targetLength;
             }
 
             setTargetAngle(angle) {
@@ -339,6 +340,10 @@
 
                 this.angle += angleDiff * TURN_SPEED;
 
+                // Store old head position for the chain
+                const oldHeadX = this.segments[0].x;
+                const oldHeadY = this.segments[0].y;
+
                 // Move head forward
                 this.segments[0].x += Math.cos(this.angle) * this.speed;
                 this.segments[0].y += Math.sin(this.angle) * this.speed;
@@ -350,30 +355,38 @@
                 if (this.segments[0].y > CANVAS_HEIGHT) this.segments[0].y = 0;
 
                 // Each segment follows the one in front of it
+                let prevX = oldHeadX;
+                let prevY = oldHeadY;
+
                 for (let i = 1; i < this.segments.length; i++) {
                     const current = this.segments[i];
-                    const target = this.segments[i - 1];
+                    const tempX = current.x;
+                    const tempY = current.y;
 
-                    const dx = target.x - current.x;
-                    const dy = target.y - current.y;
+                    const dx = prevX - current.x;
+                    const dy = prevY - current.y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
 
-                    // Only move if too far from target
+                    // Move segment towards previous position
                     if (dist > SEGMENT_SPACING) {
-                        const moveX = (dx / dist) * (dist - SEGMENT_SPACING);
-                        const moveY = (dy / dist) * (dist - SEGMENT_SPACING);
-                        current.x += moveX;
-                        current.y += moveY;
+                        current.x = prevX - (dx / dist) * SEGMENT_SPACING;
+                        current.y = prevY - (dy / dist) * SEGMENT_SPACING;
                     }
+
+                    prevX = tempX;
+                    prevY = tempY;
+                }
+
+                // Add new segments at tail if we need to grow
+                while (this.segments.length < this.targetLength) {
+                    const tail = this.segments[this.segments.length - 1];
+                    this.segments.push({ x: tail.x, y: tail.y });
                 }
             }
 
             grow(amount) {
-                // Add segments that will naturally spread out as snake moves
-                for (let i = 0; i < amount; i++) {
-                    const tail = this.segments[this.segments.length - 1];
-                    this.segments.push({ x: tail.x, y: tail.y });
-                }
+                // Increase target length - segments will be added naturally during update
+                this.targetLength += amount;
             }
 
             draw(ctx) {
@@ -688,6 +701,7 @@
             snake.alive = true;
             snake.eatenFood = [];
             snake.score = 0;
+            snake.targetLength = 10;
             snake.respawnTimer = null;
             snake.aiTarget = null;
 
