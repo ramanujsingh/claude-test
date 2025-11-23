@@ -354,7 +354,7 @@
                 if (this.segments[0].y < 0) this.segments[0].y = CANVAS_HEIGHT;
                 if (this.segments[0].y > CANVAS_HEIGHT) this.segments[0].y = 0;
 
-                // Each segment follows the one in front of it
+                // Each segment follows the one in front of it smoothly
                 let prevX = oldHeadX;
                 let prevY = oldHeadY;
 
@@ -367,7 +367,7 @@
                     const dy = prevY - current.y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
 
-                    // Move segment towards previous position
+                    // Move segment to follow the one in front
                     if (dist > SEGMENT_SPACING) {
                         current.x = prevX - (dx / dist) * SEGMENT_SPACING;
                         current.y = prevY - (dy / dist) * SEGMENT_SPACING;
@@ -376,17 +376,29 @@
                     prevX = tempX;
                     prevY = tempY;
                 }
-
-                // Add new segments at tail if we need to grow
-                while (this.segments.length < this.targetLength) {
-                    const tail = this.segments[this.segments.length - 1];
-                    this.segments.push({ x: tail.x, y: tail.y });
-                }
             }
 
             grow(amount) {
-                // Increase target length - segments will be added naturally during update
+                // Add segments at the tail that will follow along
                 this.targetLength += amount;
+                const tail = this.segments[this.segments.length - 1];
+                const secondLast = this.segments[this.segments.length - 2] || tail;
+
+                // Calculate direction from second-last to tail
+                const dx = tail.x - secondLast.x;
+                const dy = tail.y - secondLast.y;
+                const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                const dirX = dx / dist;
+                const dirY = dy / dist;
+
+                // Add new segments extending in the same direction
+                for (let i = 0; i < amount; i++) {
+                    const lastSeg = this.segments[this.segments.length - 1];
+                    this.segments.push({
+                        x: lastSeg.x + dirX * SEGMENT_SPACING,
+                        y: lastSeg.y + dirY * SEGMENT_SPACING
+                    });
+                }
             }
 
             draw(ctx) {
