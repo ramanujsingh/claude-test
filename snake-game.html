@@ -25,7 +25,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 15px;
         }
 
         .header {
@@ -40,30 +40,30 @@
         h1 {
             color: #e94560;
             text-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
-            font-size: 2rem;
+            font-size: 1.8rem;
         }
 
         .score-board {
             display: flex;
-            gap: 30px;
+            gap: 20px;
         }
 
         .score-item {
             background: rgba(255, 255, 255, 0.1);
-            padding: 10px 20px;
+            padding: 8px 16px;
             border-radius: 10px;
             color: #fff;
             text-align: center;
         }
 
         .score-item .label {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #aaa;
             text-transform: uppercase;
         }
 
         .score-item .value {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: bold;
             color: #00ff88;
         }
@@ -73,6 +73,7 @@
             border-radius: 10px;
             box-shadow: 0 0 30px rgba(233, 69, 96, 0.3);
             background: #0a0a15;
+            cursor: none;
         }
 
         .controls {
@@ -114,7 +115,7 @@
 
         .legend {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             flex-wrap: wrap;
             justify-content: center;
             max-width: 1200px;
@@ -123,17 +124,17 @@
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 5px;
             color: #fff;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             background: rgba(255, 255, 255, 0.05);
-            padding: 5px 12px;
+            padding: 4px 10px;
             border-radius: 15px;
         }
 
         .legend-color {
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
         }
 
@@ -179,16 +180,16 @@
 
         .instructions {
             color: #aaa;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             text-align: center;
-            max-width: 600px;
+            max-width: 700px;
         }
     </style>
 </head>
 <body>
     <div class="game-container">
         <div class="header">
-            <h1>🐍 Snake Battle Arena</h1>
+            <h1>Snake Battle Arena</h1>
             <div class="score-board">
                 <div class="score-item">
                     <div class="label">Score</div>
@@ -196,16 +197,16 @@
                 </div>
                 <div class="score-item">
                     <div class="label">Length</div>
-                    <div class="value" id="length">3</div>
+                    <div class="value" id="length">10</div>
                 </div>
                 <div class="score-item">
-                    <div class="label">AI Kills</div>
+                    <div class="label">Kills</div>
                     <div class="value" id="kills">0</div>
                 </div>
             </div>
         </div>
 
-        <canvas id="gameCanvas" width="1200" height="800"></canvas>
+        <canvas id="gameCanvas" width="1200" height="700"></canvas>
 
         <div class="controls">
             <button class="btn-start" id="startBtn">Start Game</button>
@@ -221,51 +222,21 @@
                 <div class="legend-color" style="background: #ff6b6b;"></div>
                 <span>AI Snakes</span>
             </div>
-            <div class="legend-item">
-                <span>🍒 5pts</span>
-            </div>
-            <div class="legend-item">
-                <span>🍎 10pts</span>
-            </div>
-            <div class="legend-item">
-                <span>🍓 12pts</span>
-            </div>
-            <div class="legend-item">
-                <span>🍑 14pts</span>
-            </div>
-            <div class="legend-item">
-                <span>🍊 15pts</span>
-            </div>
-            <div class="legend-item">
-                <span>🥝 16pts +2</span>
-            </div>
-            <div class="legend-item">
-                <span>🍌 18pts +2</span>
-            </div>
-            <div class="legend-item">
-                <span>🥭 22pts +2</span>
-            </div>
-            <div class="legend-item">
-                <span>🍇 25pts +2</span>
-            </div>
-            <div class="legend-item">
-                <span>🍍 28pts +3</span>
-            </div>
-            <div class="legend-item">
-                <span>🍉 35pts +3</span>
-            </div>
-            <div class="legend-item">
-                <span>💎 50pts +4</span>
-            </div>
-            <div class="legend-item">
-                <span>⭐ 100pts +5</span>
-            </div>
+            <div class="legend-item"><span>🍒5</span></div>
+            <div class="legend-item"><span>🍎10</span></div>
+            <div class="legend-item"><span>🍓12</span></div>
+            <div class="legend-item"><span>🍊15</span></div>
+            <div class="legend-item"><span>🥝16</span></div>
+            <div class="legend-item"><span>🍌18</span></div>
+            <div class="legend-item"><span>🍇25</span></div>
+            <div class="legend-item"><span>🍉35</span></div>
+            <div class="legend-item"><span>💎50</span></div>
+            <div class="legend-item"><span>⭐100</span></div>
         </div>
 
         <p class="instructions">
-            Move your mouse over the game to control the snake! (Arrow keys/WASD also work)<br>
-            +2/+3/+4/+5 = extra segments gained. Rare fruits give more growth!<br>
-            If another snake hits you, they die and drop their food. If you hit another snake, you die!
+            Move your mouse to guide the snake smoothly across the map. Eat food to grow and score points!<br>
+            If another snake hits you, they die. If you hit another snake, you die!
         </p>
     </div>
 
@@ -280,241 +251,170 @@
     <script>
         // Game Constants
         const CANVAS_WIDTH = 1200;
-        const CANVAS_HEIGHT = 800;
-        const GRID_SIZE = 20;
-        const COLS = CANVAS_WIDTH / GRID_SIZE;
-        const ROWS = CANVAS_HEIGHT / GRID_SIZE;
+        const CANVAS_HEIGHT = 700;
+        const SNAKE_SPEED = 3;
+        const SNAKE_RADIUS = 10;
+        const SEGMENT_SPACING = 5;
+        const TURN_SPEED = 0.15;
 
-        // Food Types with different point values
+        // Food Types
         const FOOD_TYPES = [
-            { name: 'cherry', color: '#dc143c', points: 5, emoji: '🍒', probability: 0.15, growth: 1 },
-            { name: 'apple', color: '#ff0000', points: 10, emoji: '🍎', probability: 0.18, growth: 1 },
-            { name: 'strawberry', color: '#ff6b9d', points: 12, emoji: '🍓', probability: 0.12, growth: 1 },
-            { name: 'peach', color: '#ffb07c', points: 14, emoji: '🍑', probability: 0.10, growth: 1 },
-            { name: 'orange', color: '#ffa500', points: 15, emoji: '🍊', probability: 0.10, growth: 1 },
-            { name: 'kiwi', color: '#8bc34a', points: 16, emoji: '🥝', probability: 0.08, growth: 2 },
-            { name: 'banana', color: '#ffff00', points: 18, emoji: '🍌', probability: 0.08, growth: 2 },
-            { name: 'mango', color: '#ffcc00', points: 22, emoji: '🥭', probability: 0.06, growth: 2 },
-            { name: 'grape', color: '#800080', points: 25, emoji: '🍇', probability: 0.05, growth: 2 },
-            { name: 'pineapple', color: '#f4d03f', points: 28, emoji: '🍍', probability: 0.03, growth: 3 },
-            { name: 'watermelon', color: '#2ecc71', points: 35, emoji: '🍉', probability: 0.025, growth: 3 },
-            { name: 'diamond', color: '#00ffff', points: 50, emoji: '💎', probability: 0.015, growth: 4 },
-            { name: 'star', color: '#ffd700', points: 100, emoji: '⭐', probability: 0.01, growth: 5 }
+            { name: 'cherry', color: '#dc143c', points: 5, emoji: '🍒', probability: 0.15, growth: 2, radius: 8 },
+            { name: 'apple', color: '#ff0000', points: 10, emoji: '🍎', probability: 0.18, growth: 3, radius: 10 },
+            { name: 'strawberry', color: '#ff6b9d', points: 12, emoji: '🍓', probability: 0.12, growth: 3, radius: 10 },
+            { name: 'orange', color: '#ffa500', points: 15, emoji: '🍊', probability: 0.12, growth: 4, radius: 12 },
+            { name: 'kiwi', color: '#8bc34a', points: 16, emoji: '🥝', probability: 0.10, growth: 4, radius: 12 },
+            { name: 'banana', color: '#ffff00', points: 18, emoji: '🍌', probability: 0.10, growth: 5, radius: 12 },
+            { name: 'grape', color: '#800080', points: 25, emoji: '🍇', probability: 0.08, growth: 6, radius: 14 },
+            { name: 'watermelon', color: '#2ecc71', points: 35, emoji: '🍉', probability: 0.06, growth: 8, radius: 16 },
+            { name: 'diamond', color: '#00ffff', points: 50, emoji: '💎', probability: 0.05, growth: 10, radius: 14 },
+            { name: 'star', color: '#ffd700', points: 100, emoji: '⭐', probability: 0.04, growth: 15, radius: 16 }
         ];
 
         // Game State
         let canvas, ctx;
         let gameRunning = false;
-        let gameLoop;
         let animationId;
         let score = 0;
         let kills = 0;
-        let lastUpdateTime = 0;
-        let updateInterval = 120; // ms between game logic updates
-        let interpolation = 0; // 0 to 1, for smooth rendering
+        let mouseX = CANVAS_WIDTH / 2;
+        let mouseY = CANVAS_HEIGHT / 2;
 
-        // Mouse position for mouse control
-        let mouseX = 0;
-        let mouseY = 0;
-        let useMouseControl = true;
-
-        // Player Snake
+        // Snakes and food
         let playerSnake = null;
-
-        // AI Snakes
         let aiSnakes = [];
-        const NUM_AI_SNAKES = 4;
-
-        // Food items on the board
         let foods = [];
-        const MAX_FOOD = 15;
+        const NUM_AI_SNAKES = 5;
+        const MAX_FOOD = 40;
 
-        // Direction vectors
-        const DIRECTIONS = {
-            UP: { x: 0, y: -1 },
-            DOWN: { x: 0, y: 1 },
-            LEFT: { x: -1, y: 0 },
-            RIGHT: { x: 1, y: 0 }
-        };
-
-        // Snake Class
+        // Smooth Snake Class
         class Snake {
             constructor(x, y, color, isPlayer = false) {
-                this.body = [
-                    { x: x, y: y },
-                    { x: x - 1, y: y },
-                    { x: x - 2, y: y }
-                ];
-                this.direction = DIRECTIONS.RIGHT;
-                this.nextDirection = DIRECTIONS.RIGHT;
+                this.segments = [];
                 this.color = color;
                 this.isPlayer = isPlayer;
                 this.alive = true;
-                this.eatenFood = []; // Track eaten food for dropping
+                this.angle = Math.random() * Math.PI * 2;
+                this.targetAngle = this.angle;
+                this.speed = SNAKE_SPEED;
+                this.radius = SNAKE_RADIUS;
                 this.score = 0;
-                this.moveCounter = 0;
-                this.moveDelay = isPlayer ? 1 : 2; // AI moves slower
-                this.growthPending = 0; // Track pending growth segments
-                this.prevBody = JSON.parse(JSON.stringify(this.body)); // For interpolation
+                this.eatenFood = [];
+
+                // Initialize segments
+                const initialLength = 10;
+                for (let i = 0; i < initialLength; i++) {
+                    this.segments.push({
+                        x: x - i * SEGMENT_SPACING * Math.cos(this.angle),
+                        y: y - i * SEGMENT_SPACING * Math.sin(this.angle)
+                    });
+                }
+
+                // AI properties
+                this.aiTarget = null;
+                this.aiChangeTimer = 0;
             }
 
             get head() {
-                return this.body[0];
+                return this.segments[0];
             }
 
-            setDirection(newDir) {
-                // Prevent 180-degree turns
-                if (this.direction.x + newDir.x === 0 && this.direction.y + newDir.y === 0) {
-                    return;
-                }
-                this.nextDirection = newDir;
+            get length() {
+                return this.segments.length;
             }
 
-            move() {
-                this.moveCounter++;
-                if (this.moveCounter < this.moveDelay) {
-                    return false;
-                }
-                this.moveCounter = 0;
-
-                // Store previous positions for interpolation
-                this.prevBody = JSON.parse(JSON.stringify(this.body));
-
-                this.direction = this.nextDirection;
-
-                const newHead = {
-                    x: this.head.x + this.direction.x,
-                    y: this.head.y + this.direction.y
-                };
-
-                // Wrap around edges
-                if (newHead.x < 0) newHead.x = COLS - 1;
-                if (newHead.x >= COLS) newHead.x = 0;
-                if (newHead.y < 0) newHead.y = ROWS - 1;
-                if (newHead.y >= ROWS) newHead.y = 0;
-
-                this.body.unshift(newHead);
-                return true;
+            setTargetAngle(angle) {
+                this.targetAngle = angle;
             }
 
-            grow(amount = 1) {
-                // Add to pending growth
-                this.growthPending += amount;
-            }
-
-            shrink() {
-                // Only shrink if no pending growth
-                if (this.growthPending > 0) {
-                    this.growthPending--;
-                } else {
-                    this.body.pop();
-                }
-            }
-
-            checkSelfCollision() {
-                for (let i = 1; i < this.body.length; i++) {
-                    if (this.head.x === this.body[i].x && this.head.y === this.body[i].y) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            draw(ctx, t = 1) {
+            update() {
                 if (!this.alive) return;
 
-                const centerOffset = GRID_SIZE / 2;
+                // Smoothly interpolate angle
+                let angleDiff = this.targetAngle - this.angle;
 
-                // Get interpolated positions
-                const getInterpolatedPos = (i) => {
-                    const current = this.body[i];
-                    const prev = this.prevBody[i] || current;
+                // Normalize angle difference to -PI to PI
+                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
 
-                    // Don't interpolate if wrapped around screen
-                    if (Math.abs(current.x - prev.x) > 1 || Math.abs(current.y - prev.y) > 1) {
-                        return { x: current.x, y: current.y };
-                    }
+                this.angle += angleDiff * TURN_SPEED;
 
-                    return {
-                        x: prev.x + (current.x - prev.x) * t,
-                        y: prev.y + (current.y - prev.y) * t
-                    };
+                // Move head
+                const newHead = {
+                    x: this.head.x + Math.cos(this.angle) * this.speed,
+                    y: this.head.y + Math.sin(this.angle) * this.speed
                 };
 
-                // Draw connecting lines between segments for smooth look
-                ctx.strokeStyle = this.color;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
+                // Wrap around edges smoothly
+                if (newHead.x < 0) newHead.x = CANVAS_WIDTH;
+                if (newHead.x > CANVAS_WIDTH) newHead.x = 0;
+                if (newHead.y < 0) newHead.y = CANVAS_HEIGHT;
+                if (newHead.y > CANVAS_HEIGHT) newHead.y = 0;
 
-                for (let i = 0; i < this.body.length - 1; i++) {
-                    const current = getInterpolatedPos(i);
-                    const next = getInterpolatedPos(i + 1);
+                // Add new head
+                this.segments.unshift(newHead);
 
-                    // Skip if segments are far apart (wrapped around screen)
-                    if (Math.abs(current.x - next.x) > 2 || Math.abs(current.y - next.y) > 2) continue;
-
-                    const alpha = 0.6 + (0.4 * (this.body.length - i) / this.body.length);
-                    ctx.globalAlpha = alpha;
-                    ctx.lineWidth = GRID_SIZE - 4;
-
-                    ctx.beginPath();
-                    ctx.moveTo(current.x * GRID_SIZE + centerOffset, current.y * GRID_SIZE + centerOffset);
-                    ctx.lineTo(next.x * GRID_SIZE + centerOffset, next.y * GRID_SIZE + centerOffset);
-                    ctx.stroke();
+                // Remove tail to maintain length
+                while (this.segments.length > this.length) {
+                    this.segments.pop();
                 }
-                ctx.globalAlpha = 1;
+            }
 
-                // Draw circular body segments
-                for (let i = this.body.length - 1; i >= 0; i--) {
-                    const segment = getInterpolatedPos(i);
+            grow(amount) {
+                // Add segments at the tail
+                const tail = this.segments[this.segments.length - 1];
+                for (let i = 0; i < amount; i++) {
+                    this.segments.push({ x: tail.x, y: tail.y });
+                }
+            }
+
+            draw(ctx) {
+                if (!this.alive) return;
+
+                // Draw body segments with gradient
+                for (let i = this.segments.length - 1; i >= 0; i--) {
+                    const segment = this.segments[i];
                     const isHead = i === 0;
-                    const alpha = 0.6 + (0.4 * (this.body.length - i) / this.body.length);
-                    const radius = isHead ? (GRID_SIZE / 2) - 1 : (GRID_SIZE / 2) - 2;
 
-                    ctx.globalAlpha = isHead ? 1 : alpha;
+                    // Size variation - head is bigger
+                    const size = isHead ? this.radius : this.radius * 0.85;
+
+                    // Alpha gradient from tail to head
+                    const alpha = 0.4 + (0.6 * (this.segments.length - i) / this.segments.length);
+
+                    ctx.globalAlpha = alpha;
                     ctx.fillStyle = this.color;
                     ctx.beginPath();
-                    ctx.arc(
-                        segment.x * GRID_SIZE + centerOffset,
-                        segment.y * GRID_SIZE + centerOffset,
-                        radius,
-                        0,
-                        Math.PI * 2
-                    );
+                    ctx.arc(segment.x, segment.y, size, 0, Math.PI * 2);
                     ctx.fill();
 
+                    // Draw eyes on head
                     if (isHead) {
-                        // Draw eyes on head
+                        ctx.globalAlpha = 1;
+
+                        // Eye positions based on angle
+                        const eyeOffset = this.radius * 0.4;
+                        const eyeAngle1 = this.angle - 0.5;
+                        const eyeAngle2 = this.angle + 0.5;
+
+                        const eye1X = segment.x + Math.cos(eyeAngle1) * eyeOffset;
+                        const eye1Y = segment.y + Math.sin(eyeAngle1) * eyeOffset;
+                        const eye2X = segment.x + Math.cos(eyeAngle2) * eyeOffset;
+                        const eye2Y = segment.y + Math.sin(eyeAngle2) * eyeOffset;
+
+                        // White of eyes
                         ctx.fillStyle = '#fff';
-                        const eyeOffsetX = this.direction.x * 4;
-                        const eyeOffsetY = this.direction.y * 4;
-
-                        // Position eyes based on direction
-                        let eye1X, eye1Y, eye2X, eye2Y;
-                        if (this.direction.x !== 0) {
-                            // Moving horizontally
-                            eye1X = segment.x * GRID_SIZE + centerOffset + eyeOffsetX;
-                            eye1Y = segment.y * GRID_SIZE + centerOffset - 4;
-                            eye2X = segment.x * GRID_SIZE + centerOffset + eyeOffsetX;
-                            eye2Y = segment.y * GRID_SIZE + centerOffset + 4;
-                        } else {
-                            // Moving vertically
-                            eye1X = segment.x * GRID_SIZE + centerOffset - 4;
-                            eye1Y = segment.y * GRID_SIZE + centerOffset + eyeOffsetY;
-                            eye2X = segment.x * GRID_SIZE + centerOffset + 4;
-                            eye2Y = segment.y * GRID_SIZE + centerOffset + eyeOffsetY;
-                        }
-
                         ctx.beginPath();
-                        ctx.arc(eye1X, eye1Y, 3, 0, Math.PI * 2);
-                        ctx.arc(eye2X, eye2Y, 3, 0, Math.PI * 2);
+                        ctx.arc(eye1X, eye1Y, 4, 0, Math.PI * 2);
+                        ctx.arc(eye2X, eye2Y, 4, 0, Math.PI * 2);
                         ctx.fill();
 
                         // Pupils
                         ctx.fillStyle = '#000';
+                        const pupilOffset = 1.5;
                         ctx.beginPath();
-                        ctx.arc(eye1X + this.direction.x, eye1Y + this.direction.y, 1.5, 0, Math.PI * 2);
-                        ctx.arc(eye2X + this.direction.x, eye2Y + this.direction.y, 1.5, 0, Math.PI * 2);
+                        ctx.arc(eye1X + Math.cos(this.angle) * pupilOffset, eye1Y + Math.sin(this.angle) * pupilOffset, 2, 0, Math.PI * 2);
+                        ctx.arc(eye2X + Math.cos(this.angle) * pupilOffset, eye2Y + Math.sin(this.angle) * pupilOffset, 2, 0, Math.PI * 2);
                         ctx.fill();
                     }
                 }
@@ -522,23 +422,13 @@
             }
 
             dropFood() {
-                // Drop all eaten food when snake dies
                 const droppedFood = [];
-                for (const food of this.eatenFood) {
-                    // Find a position near where the snake died
-                    const randomSegment = this.body[Math.floor(Math.random() * this.body.length)];
+                // Drop food along the body
+                for (let i = 0; i < this.segments.length; i += 3) {
+                    const segment = this.segments[i];
                     droppedFood.push({
-                        x: randomSegment.x + Math.floor(Math.random() * 3) - 1,
-                        y: randomSegment.y + Math.floor(Math.random() * 3) - 1,
-                        type: food
-                    });
-                }
-                // Also drop some bonus food based on snake length
-                for (let i = 0; i < Math.floor(this.body.length / 2); i++) {
-                    const randomSegment = this.body[Math.floor(Math.random() * this.body.length)];
-                    droppedFood.push({
-                        x: randomSegment.x,
-                        y: randomSegment.y,
+                        x: segment.x + (Math.random() - 0.5) * 20,
+                        y: segment.y + (Math.random() - 0.5) * 20,
                         type: getRandomFoodType()
                     });
                 }
@@ -546,348 +436,223 @@
             }
         }
 
-        // AI Snake behavior
-        function updateAISnake(snake) {
+        // AI behavior
+        function updateAI(snake) {
             if (!snake.alive) return;
 
-            // Find nearest food
-            let nearestFood = null;
-            let nearestDist = Infinity;
+            snake.aiChangeTimer--;
 
-            for (const food of foods) {
-                const dist = Math.abs(food.x - snake.head.x) + Math.abs(food.y - snake.head.y);
-                if (dist < nearestDist) {
-                    nearestDist = dist;
-                    nearestFood = food;
+            // Find new target periodically or if no target
+            if (snake.aiChangeTimer <= 0 || !snake.aiTarget) {
+                snake.aiChangeTimer = 60 + Math.random() * 60;
+
+                // Find nearest food
+                let nearestFood = null;
+                let nearestDist = Infinity;
+
+                for (const food of foods) {
+                    const dx = food.x - snake.head.x;
+                    const dy = food.y - snake.head.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < nearestDist) {
+                        nearestDist = dist;
+                        nearestFood = food;
+                    }
                 }
+
+                snake.aiTarget = nearestFood;
             }
 
-            if (nearestFood) {
-                // Determine best direction to food
-                const dx = nearestFood.x - snake.head.x;
-                const dy = nearestFood.y - snake.head.y;
+            // Move towards target
+            if (snake.aiTarget) {
+                const dx = snake.aiTarget.x - snake.head.x;
+                const dy = snake.aiTarget.y - snake.head.y;
+                snake.setTargetAngle(Math.atan2(dy, dx));
+            }
 
-                let preferredDirs = [];
+            // Avoid player if too close
+            if (playerSnake && playerSnake.alive) {
+                const dx = playerSnake.head.x - snake.head.x;
+                const dy = playerSnake.head.y - snake.head.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
 
-                if (Math.abs(dx) > Math.abs(dy)) {
-                    if (dx > 0) preferredDirs.push(DIRECTIONS.RIGHT);
-                    else preferredDirs.push(DIRECTIONS.LEFT);
-                    if (dy > 0) preferredDirs.push(DIRECTIONS.DOWN);
-                    else if (dy < 0) preferredDirs.push(DIRECTIONS.UP);
-                } else {
-                    if (dy > 0) preferredDirs.push(DIRECTIONS.DOWN);
-                    else if (dy < 0) preferredDirs.push(DIRECTIONS.UP);
-                    if (dx > 0) preferredDirs.push(DIRECTIONS.RIGHT);
-                    else if (dx < 0) preferredDirs.push(DIRECTIONS.LEFT);
-                }
-
-                // Add some randomness
-                if (Math.random() < 0.1) {
-                    const allDirs = [DIRECTIONS.UP, DIRECTIONS.DOWN, DIRECTIONS.LEFT, DIRECTIONS.RIGHT];
-                    preferredDirs = [allDirs[Math.floor(Math.random() * allDirs.length)]];
-                }
-
-                // Try to avoid collisions
-                for (const dir of preferredDirs) {
-                    const newX = snake.head.x + dir.x;
-                    const newY = snake.head.y + dir.y;
-
-                    // Check if this direction would cause collision with self
-                    let wouldCollide = false;
-                    for (let i = 0; i < snake.body.length - 1; i++) {
-                        if (snake.body[i].x === newX && snake.body[i].y === newY) {
-                            wouldCollide = true;
-                            break;
-                        }
-                    }
-
-                    // Check collision with player
-                    if (playerSnake && playerSnake.alive) {
-                        for (const seg of playerSnake.body) {
-                            if (seg.x === newX && seg.y === newY) {
-                                wouldCollide = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!wouldCollide) {
-                        snake.setDirection(dir);
-                        break;
-                    }
+                if (dist < 100) {
+                    // Turn away from player
+                    snake.setTargetAngle(Math.atan2(-dy, -dx));
                 }
             }
         }
 
-        // Update player direction based on mouse position
-        function updatePlayerMouseDirection() {
-            if (!useMouseControl || !playerSnake || !playerSnake.alive) return;
-
-            // Convert mouse position to grid coordinates
-            const targetX = Math.floor(mouseX / GRID_SIZE);
-            const targetY = Math.floor(mouseY / GRID_SIZE);
-
-            // Calculate difference from snake head
-            const dx = targetX - playerSnake.head.x;
-            const dy = targetY - playerSnake.head.y;
-
-            // Determine best direction based on mouse position
-            if (Math.abs(dx) > Math.abs(dy)) {
-                // Horizontal movement preferred
-                if (dx > 0) {
-                    playerSnake.setDirection(DIRECTIONS.RIGHT);
-                } else if (dx < 0) {
-                    playerSnake.setDirection(DIRECTIONS.LEFT);
-                }
-            } else {
-                // Vertical movement preferred
-                if (dy > 0) {
-                    playerSnake.setDirection(DIRECTIONS.DOWN);
-                } else if (dy < 0) {
-                    playerSnake.setDirection(DIRECTIONS.UP);
-                }
-            }
-        }
-
-        // Get random food type based on probability
+        // Get random food type
         function getRandomFoodType() {
             const rand = Math.random();
             let cumulative = 0;
             for (const type of FOOD_TYPES) {
                 cumulative += type.probability;
-                if (rand <= cumulative) {
-                    return type;
-                }
+                if (rand <= cumulative) return type;
             }
-            return FOOD_TYPES[0]; // Default to apple
+            return FOOD_TYPES[0];
         }
 
         // Spawn food
         function spawnFood() {
             if (foods.length >= MAX_FOOD) return;
 
-            let x, y;
-            let attempts = 0;
-            do {
-                x = Math.floor(Math.random() * COLS);
-                y = Math.floor(Math.random() * ROWS);
-                attempts++;
-            } while (isOccupied(x, y) && attempts < 100);
-
-            if (attempts < 100) {
-                foods.push({
-                    x: x,
-                    y: y,
-                    type: getRandomFoodType()
-                });
-            }
+            const padding = 30;
+            foods.push({
+                x: padding + Math.random() * (CANVAS_WIDTH - padding * 2),
+                y: padding + Math.random() * (CANVAS_HEIGHT - padding * 2),
+                type: getRandomFoodType()
+            });
         }
 
-        // Check if position is occupied
-        function isOccupied(x, y) {
-            // Check player
-            if (playerSnake && playerSnake.alive) {
-                for (const seg of playerSnake.body) {
-                    if (seg.x === x && seg.y === y) return true;
+        // Check collision between point and snake body
+        function checkCollisionWithSnake(x, y, snake, skipHead = false) {
+            const startIndex = skipHead ? 10 : 0; // Skip first segments to avoid self-collision issues
+            for (let i = startIndex; i < snake.segments.length; i++) {
+                const segment = snake.segments[i];
+                const dx = x - segment.x;
+                const dy = y - segment.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < snake.radius + 5) {
+                    return true;
                 }
             }
-
-            // Check AI snakes
-            for (const snake of aiSnakes) {
-                if (!snake.alive) continue;
-                for (const seg of snake.body) {
-                    if (seg.x === x && seg.y === y) return true;
-                }
-            }
-
-            // Check food
-            for (const food of foods) {
-                if (food.x === x && food.y === y) return true;
-            }
-
             return false;
         }
 
         // Draw food
-        function drawFood(ctx) {
+        function drawFood() {
             for (const food of foods) {
                 // Glow effect
                 ctx.shadowColor = food.type.color;
-                ctx.shadowBlur = 10;
+                ctx.shadowBlur = 15;
 
-                // Draw food
+                // Draw circle
                 ctx.fillStyle = food.type.color;
                 ctx.beginPath();
-                ctx.arc(
-                    food.x * GRID_SIZE + GRID_SIZE / 2,
-                    food.y * GRID_SIZE + GRID_SIZE / 2,
-                    GRID_SIZE / 2 - 2,
-                    0,
-                    Math.PI * 2
-                );
+                ctx.arc(food.x, food.y, food.type.radius, 0, Math.PI * 2);
                 ctx.fill();
 
                 // Draw emoji
                 ctx.shadowBlur = 0;
-                ctx.font = '14px Arial';
+                ctx.font = `${food.type.radius * 1.5}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(
-                    food.type.emoji,
-                    food.x * GRID_SIZE + GRID_SIZE / 2,
-                    food.y * GRID_SIZE + GRID_SIZE / 2
-                );
+                ctx.fillText(food.type.emoji, food.x, food.y);
             }
             ctx.shadowBlur = 0;
         }
 
-        // Draw grid
-        function drawGrid(ctx) {
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-            ctx.lineWidth = 1;
-
-            for (let x = 0; x <= COLS; x++) {
-                ctx.beginPath();
-                ctx.moveTo(x * GRID_SIZE, 0);
-                ctx.lineTo(x * GRID_SIZE, CANVAS_HEIGHT);
-                ctx.stroke();
-            }
-
-            for (let y = 0; y <= ROWS; y++) {
-                ctx.beginPath();
-                ctx.moveTo(0, y * GRID_SIZE);
-                ctx.lineTo(CANVAS_WIDTH, y * GRID_SIZE);
-                ctx.stroke();
-            }
-        }
-
-        // Check head-to-body collision between two snakes
-        function checkSnakeCollision(attacker, target) {
-            if (!attacker.alive || !target.alive) return false;
-
-            // Check if attacker's head hits any part of target's body (excluding head)
-            for (let i = 1; i < target.body.length; i++) {
-                if (attacker.head.x === target.body[i].x && attacker.head.y === target.body[i].y) {
-                    return true;
-                }
-            }
-
-            // Head-to-head collision
-            if (attacker.head.x === target.head.x && attacker.head.y === target.head.y) {
-                return true;
-            }
-
-            return false;
-        }
-
-        // Main game update
+        // Main update
         function update() {
             if (!gameRunning) return;
 
             // Update player direction based on mouse
-            updatePlayerMouseDirection();
+            if (playerSnake && playerSnake.alive) {
+                const dx = mouseX - playerSnake.head.x;
+                const dy = mouseY - playerSnake.head.y;
+                playerSnake.setTargetAngle(Math.atan2(dy, dx));
+                playerSnake.update();
+            }
 
             // Update AI snakes
             for (const snake of aiSnakes) {
                 if (snake.alive) {
-                    updateAISnake(snake);
+                    updateAI(snake);
+                    snake.update();
                 }
             }
 
-            // Move player
-            let playerMoved = false;
+            // Check player eating food
             if (playerSnake && playerSnake.alive) {
-                playerMoved = playerSnake.move();
-                if (playerMoved) {
-                    playerSnake.shrink();
-                }
-            }
-
-            // Move AI snakes
-            for (const snake of aiSnakes) {
-                if (snake.alive) {
-                    const moved = snake.move();
-                    if (moved) {
-                        snake.shrink();
-                    }
-                }
-            }
-
-            // Check collisions and food eating
-            if (playerSnake && playerSnake.alive) {
-                // Player self-collision
-                if (playerSnake.checkSelfCollision()) {
-                    killSnake(playerSnake);
-                }
-
-                // Player eating food
                 for (let i = foods.length - 1; i >= 0; i--) {
-                    if (playerSnake.head.x === foods[i].x && playerSnake.head.y === foods[i].y) {
-                        const food = foods.splice(i, 1)[0];
-                        playerSnake.grow(food.type.growth || 1);
+                    const food = foods[i];
+                    const dx = food.x - playerSnake.head.x;
+                    const dy = food.y - playerSnake.head.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < playerSnake.radius + food.type.radius) {
+                        playerSnake.grow(food.type.growth);
                         playerSnake.eatenFood.push(food.type);
                         score += food.type.points;
+                        foods.splice(i, 1);
                         updateScoreDisplay();
                     }
                 }
+            }
 
-                // Player vs AI collisions
+            // Check AI eating food
+            for (const snake of aiSnakes) {
+                if (!snake.alive) continue;
+
+                for (let i = foods.length - 1; i >= 0; i--) {
+                    const food = foods[i];
+                    const dx = food.x - snake.head.x;
+                    const dy = food.y - snake.head.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < snake.radius + food.type.radius) {
+                        snake.grow(food.type.growth);
+                        snake.eatenFood.push(food.type);
+                        snake.score += food.type.points;
+                        foods.splice(i, 1);
+                    }
+                }
+            }
+
+            // Check collisions - player vs AI
+            if (playerSnake && playerSnake.alive) {
                 for (const aiSnake of aiSnakes) {
                     if (!aiSnake.alive) continue;
 
-                    // If player hits AI snake body -> player dies
-                    if (checkSnakeCollision(playerSnake, aiSnake)) {
+                    // Player head hits AI body -> player dies
+                    if (checkCollisionWithSnake(playerSnake.head.x, playerSnake.head.y, aiSnake, false)) {
                         killSnake(playerSnake);
                     }
 
-                    // If AI hits player body -> AI dies
-                    if (checkSnakeCollision(aiSnake, playerSnake)) {
+                    // AI head hits player body -> AI dies
+                    if (checkCollisionWithSnake(aiSnake.head.x, aiSnake.head.y, playerSnake, false)) {
                         killSnake(aiSnake);
                         kills++;
                         updateScoreDisplay();
                     }
                 }
-            }
 
-            // AI snake collisions and food eating
-            for (let i = 0; i < aiSnakes.length; i++) {
-                const snake = aiSnakes[i];
-                if (!snake.alive) continue;
-
-                // Self-collision
-                if (snake.checkSelfCollision()) {
-                    killSnake(snake);
-                    continue;
-                }
-
-                // AI eating food
-                for (let j = foods.length - 1; j >= 0; j--) {
-                    if (snake.head.x === foods[j].x && snake.head.y === foods[j].y) {
-                        const food = foods.splice(j, 1)[0];
-                        snake.grow(food.type.growth || 1);
-                        snake.eatenFood.push(food.type);
-                        snake.score += food.type.points;
+                // Player self-collision (skip first 20 segments)
+                for (let i = 20; i < playerSnake.segments.length; i++) {
+                    const segment = playerSnake.segments[i];
+                    const dx = playerSnake.head.x - segment.x;
+                    const dy = playerSnake.head.y - segment.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < playerSnake.radius) {
+                        killSnake(playerSnake);
+                        break;
                     }
                 }
+            }
 
-                // AI vs AI collisions
+            // AI vs AI collisions
+            for (let i = 0; i < aiSnakes.length; i++) {
                 for (let j = 0; j < aiSnakes.length; j++) {
                     if (i === j) continue;
-                    const other = aiSnakes[j];
-                    if (!other.alive) continue;
+                    const snake1 = aiSnakes[i];
+                    const snake2 = aiSnakes[j];
+                    if (!snake1.alive || !snake2.alive) continue;
 
-                    if (checkSnakeCollision(snake, other)) {
-                        killSnake(snake);
+                    if (checkCollisionWithSnake(snake1.head.x, snake1.head.y, snake2, false)) {
+                        killSnake(snake1);
                     }
                 }
             }
 
-            // Spawn more food periodically
-            if (Math.random() < 0.05) {
+            // Spawn food
+            if (Math.random() < 0.03) {
                 spawnFood();
             }
 
-            // Respawn dead AI snakes after a delay
+            // Respawn AI
             for (const snake of aiSnakes) {
                 if (!snake.alive && !snake.respawnTimer) {
                     snake.respawnTimer = setTimeout(() => {
@@ -902,98 +667,106 @@
             }
         }
 
-        // Kill a snake and drop its food
+        // Kill snake
         function killSnake(snake) {
+            if (!snake.alive) return;
             snake.alive = false;
+
+            // Drop food
             const droppedFood = snake.dropFood();
-
             for (const food of droppedFood) {
-                // Wrap coordinates
-                let x = food.x;
-                let y = food.y;
-                if (x < 0) x = 0;
-                if (x >= COLS) x = COLS - 1;
-                if (y < 0) y = 0;
-                if (y >= ROWS) y = ROWS - 1;
+                if (food.x > 0 && food.x < CANVAS_WIDTH && food.y > 0 && food.y < CANVAS_HEIGHT) {
+                    foods.push(food);
+                }
+            }
+        }
 
-                foods.push({
-                    x: x,
-                    y: y,
-                    type: food.type
+        // Respawn AI snake
+        function respawnAISnake(snake) {
+            const x = 100 + Math.random() * (CANVAS_WIDTH - 200);
+            const y = 100 + Math.random() * (CANVAS_HEIGHT - 200);
+
+            snake.segments = [];
+            snake.angle = Math.random() * Math.PI * 2;
+            snake.targetAngle = snake.angle;
+            snake.alive = true;
+            snake.eatenFood = [];
+            snake.score = 0;
+            snake.respawnTimer = null;
+            snake.aiTarget = null;
+
+            const initialLength = 10;
+            for (let i = 0; i < initialLength; i++) {
+                snake.segments.push({
+                    x: x - i * SEGMENT_SPACING * Math.cos(snake.angle),
+                    y: y - i * SEGMENT_SPACING * Math.sin(snake.angle)
                 });
             }
         }
 
-        // Respawn an AI snake
-        function respawnAISnake(snake) {
-            const startX = Math.floor(Math.random() * (COLS - 10)) + 5;
-            const startY = Math.floor(Math.random() * (ROWS - 10)) + 5;
-
-            snake.body = [
-                { x: startX, y: startY },
-                { x: startX - 1, y: startY },
-                { x: startX - 2, y: startY }
-            ];
-            snake.prevBody = JSON.parse(JSON.stringify(snake.body));
-            snake.direction = DIRECTIONS.RIGHT;
-            snake.nextDirection = DIRECTIONS.RIGHT;
-            snake.alive = true;
-            snake.eatenFood = [];
-            snake.score = 0;
-            snake.growthPending = 0;
-            snake.respawnTimer = null;
-        }
-
-        // Render with interpolation
-        function render(t = 1) {
-            // Clear canvas
-            ctx.fillStyle = '#0a0a15';
+        // Render
+        function render() {
+            // Clear with gradient background
+            const gradient = ctx.createRadialGradient(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, 0, CANVAS_WIDTH/2, CANVAS_HEIGHT/2, CANVAS_WIDTH/2);
+            gradient.addColorStop(0, '#0f0f1a');
+            gradient.addColorStop(1, '#050510');
+            ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-            // Draw grid
-            drawGrid(ctx);
+            // Draw subtle background pattern
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+            ctx.lineWidth = 1;
+            const spacing = 50;
+            for (let x = 0; x < CANVAS_WIDTH; x += spacing) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, CANVAS_HEIGHT);
+                ctx.stroke();
+            }
+            for (let y = 0; y < CANVAS_HEIGHT; y += spacing) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(CANVAS_WIDTH, y);
+                ctx.stroke();
+            }
 
             // Draw food
-            drawFood(ctx);
+            drawFood();
 
             // Draw AI snakes
             for (const snake of aiSnakes) {
-                snake.draw(ctx, t);
+                snake.draw(ctx);
             }
 
-            // Draw player (on top)
+            // Draw player on top
             if (playerSnake) {
-                playerSnake.draw(ctx, t);
+                playerSnake.draw(ctx);
+            }
+
+            // Draw cursor indicator
+            if (gameRunning && playerSnake && playerSnake.alive) {
+                ctx.strokeStyle = 'rgba(0, 255, 136, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(mouseX, mouseY, 15, 0, Math.PI * 2);
+                ctx.stroke();
             }
         }
 
-        // Smooth game loop using requestAnimationFrame
-        function gameLoopFn(currentTime) {
+        // Game loop
+        function gameLoop() {
             if (!gameRunning) return;
 
-            // Calculate time since last update
-            const elapsed = currentTime - lastUpdateTime;
+            update();
+            render();
 
-            // Update game logic at fixed intervals
-            if (elapsed >= updateInterval) {
-                update();
-                lastUpdateTime = currentTime;
-            }
-
-            // Calculate interpolation (0 to 1)
-            const t = Math.min(elapsed / updateInterval, 1);
-
-            // Render with interpolation
-            render(t);
-
-            // Request next frame
-            animationId = requestAnimationFrame(gameLoopFn);
+            animationId = requestAnimationFrame(gameLoop);
         }
 
         // Update score display
         function updateScoreDisplay() {
             document.getElementById('score').textContent = score;
-            document.getElementById('length').textContent = playerSnake ? playerSnake.body.length : 0;
+            document.getElementById('length').textContent = playerSnake ? playerSnake.length : 0;
             document.getElementById('kills').textContent = kills;
         }
 
@@ -1016,21 +789,20 @@
             ctx = canvas.getContext('2d');
 
             // Create player snake
-            playerSnake = new Snake(10, Math.floor(ROWS / 2), '#00ff88', true);
+            playerSnake = new Snake(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, '#00ff88', true);
 
-            // Create AI snakes with different colors
-            const aiColors = ['#ff6b6b', '#feca57', '#54a0ff', '#5f27cd'];
+            // Create AI snakes
+            const aiColors = ['#ff6b6b', '#feca57', '#54a0ff', '#5f27cd', '#ff9ff3'];
             aiSnakes = [];
             for (let i = 0; i < NUM_AI_SNAKES; i++) {
-                const startX = Math.floor(Math.random() * (COLS - 20)) + 10;
-                const startY = Math.floor(Math.random() * (ROWS - 10)) + 5;
-                const snake = new Snake(startX, startY, aiColors[i % aiColors.length], false);
-                aiSnakes.push(snake);
+                const x = 100 + Math.random() * (CANVAS_WIDTH - 200);
+                const y = 100 + Math.random() * (CANVAS_HEIGHT - 200);
+                aiSnakes.push(new Snake(x, y, aiColors[i % aiColors.length], false));
             }
 
             // Spawn initial food
             foods = [];
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 25; i++) {
                 spawnFood();
             }
 
@@ -1047,15 +819,13 @@
             document.getElementById('startBtn').style.display = 'none';
             document.getElementById('restartBtn').style.display = 'inline-block';
 
-            lastUpdateTime = performance.now();
-            animationId = requestAnimationFrame(gameLoopFn);
+            animationId = requestAnimationFrame(gameLoop);
         }
 
         // Restart game
         function restartGame() {
             document.getElementById('gameOverOverlay').style.display = 'none';
 
-            // Clear any respawn timers
             for (const snake of aiSnakes) {
                 if (snake.respawnTimer) {
                     clearTimeout(snake.respawnTimer);
@@ -1065,42 +835,6 @@
             startGame();
         }
 
-        // Keyboard controls
-        document.addEventListener('keydown', (e) => {
-            if (!playerSnake || !playerSnake.alive) return;
-
-            switch (e.key) {
-                case 'ArrowUp':
-                case 'w':
-                case 'W':
-                    e.preventDefault();
-                    playerSnake.setDirection(DIRECTIONS.UP);
-                    break;
-                case 'ArrowDown':
-                case 's':
-                case 'S':
-                    e.preventDefault();
-                    playerSnake.setDirection(DIRECTIONS.DOWN);
-                    break;
-                case 'ArrowLeft':
-                case 'a':
-                case 'A':
-                    e.preventDefault();
-                    playerSnake.setDirection(DIRECTIONS.LEFT);
-                    break;
-                case 'ArrowRight':
-                case 'd':
-                case 'D':
-                    e.preventDefault();
-                    playerSnake.setDirection(DIRECTIONS.RIGHT);
-                    break;
-            }
-        });
-
-        // Button handlers
-        document.getElementById('startBtn').addEventListener('click', startGame);
-        document.getElementById('restartBtn').addEventListener('click', restartGame);
-
         // Mouse controls
         document.getElementById('gameCanvas').addEventListener('mousemove', (e) => {
             const rect = canvas.getBoundingClientRect();
@@ -1108,7 +842,7 @@
             mouseY = e.clientY - rect.top;
         });
 
-        // Touch controls for mobile
+        // Touch controls
         document.getElementById('gameCanvas').addEventListener('touchmove', (e) => {
             e.preventDefault();
             const rect = canvas.getBoundingClientRect();
@@ -1117,17 +851,18 @@
             mouseY = touch.clientY - rect.top;
         });
 
+        // Button handlers
+        document.getElementById('startBtn').addEventListener('click', startGame);
+        document.getElementById('restartBtn').addEventListener('click', restartGame);
+
         // Initial render
         window.onload = () => {
             canvas = document.getElementById('gameCanvas');
             ctx = canvas.getContext('2d');
 
-            // Draw initial state
             ctx.fillStyle = '#0a0a15';
             ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-            drawGrid(ctx);
 
-            // Draw welcome message
             ctx.fillStyle = '#fff';
             ctx.font = '24px Arial';
             ctx.textAlign = 'center';
