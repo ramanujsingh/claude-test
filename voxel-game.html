@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoxelWorld - A Minecraft-like Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #4caf50;
+        }
+
+        #title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4caf50;
+        }
+
+        #gameStats {
+            display: flex;
+            gap: 30px;
+            font-size: 14px;
+        }
+
+        #gameCanvas {
+            flex: 1;
+            display: block;
+            background: linear-gradient(135deg, #87ceeb, #e0f6ff);
+        }
+
+        #hud {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px 20px;
+            border-top: 2px solid #4caf50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #hotbar {
+            display: flex;
+            gap: 5px;
+            background: rgba(50, 50, 50, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .hotbar-slot {
+            width: 40px;
+            height: 40px;
+            background: rgba(100, 100, 100, 0.6);
+            border: 2px solid #666;
+            border-radius: 3px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .hotbar-slot.active {
+            background: rgba(76, 175, 80, 0.8);
+            border-color: #4caf50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+
+        .hotbar-slot:hover {
+            background: rgba(120, 120, 120, 0.8);
+        }
+
+        .hotbar-item-name {
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        .hotbar-item-count {
+            font-size: 9px;
+            color: #aaa;
+        }
+
+        #controls {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        #modeToggle {
+            padding: 8px 15px;
+            background: #4caf50;
+            color: #000;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 20px;
+        }
+
+        #modeToggle:hover {
+            background: #45a049;
+        }
+
+        #pauseMenu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        #pauseMenu.show {
+            display: flex;
+        }
+
+        .menu-panel {
+            background: rgba(40, 40, 40, 0.95);
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #4caf50;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .menu-panel h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #4caf50;
+        }
+
+        .menu-panel p {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        .menu-button {
+            margin-top: 15px;
+            padding: 10px 30px;
+            background: #4caf50;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .menu-button:hover {
+            background: #45a049;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 50px);
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .inventory-slot {
+            width: 50px;
+            height: 50px;
+            background: rgba(100, 100, 100, 0.6);
+            border: 1px solid #666;
+            border-radius: 3px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+        .inventory-slot:hover {
+            background: rgba(120, 120, 120, 0.8);
+        }
+
+        #crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 2px solid rgba(76, 175, 80, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        #crosshair::before,
+        #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(76, 175, 80, 0.6);
+        }
+
+        #crosshair::before {
+            width: 2px;
+            height: 15px;
+            left: 50%;
+            top: -20px;
+            transform: translateX(-50%);
+        }
+
+        #crosshair::after {
+            width: 15px;
+            height: 2px;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        #debugInfo {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 50;
+            color: #4caf50;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="header">
+            <div id="title">🎮 VoxelWorld</div>
+            <div id="gameStats">
+                <span>🌍 <span id="biomeDisplay">Plains</span></span>
+                <span>❤️ <span id="healthDisplay">10</span>/10</span>
+                <span>🍖 <span id="hungerDisplay">10</span>/10</span>
+            </div>
+            <button id="modeToggle">Creative Mode</button>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="crosshair"></div>
+        <div id="debugInfo"></div>
+        <div id="hud">
+            <div>WASD: Move | Mouse: Look | Left Click: Mine | Right Click: Place | E: Inventory | Esc: Pause | 1-9: Select Block</div>
+            <div id="hotbar"></div>
+            <div id="controls">FPS: <span id="fpsCounter">60</span></div>
+        </div>
+    </div>
+
+    <div id="pauseMenu">
+        <div class="menu-panel">
+            <h1>⏸️ Game Paused</h1>
+            <p>Welcome to VoxelWorld!</p>
+            <p>Build, Explore, and Survive in your voxel universe.</p>
+            <button class="menu-button" onclick="game.unpause()">Resume Game (ESC)</button>
+            <button class="menu-button" onclick="location.reload()">New Game</button>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================================
+        // VOXEL WORLD GAME ENGINE
+        // ============================================================================
+
+        const BLOCK_TYPES = {
+            AIR: 0,
+            GRASS: 1,
+            DIRT: 2,
+            STONE: 3,
+            WOOD: 4,
+            LEAVES: 5,
+            SAND: 6,
+            WATER: 7,
+            COAL: 8,
+            IRON: 9,
+            GOLD: 10,
+            DIAMOND: 11,
+            SNOW: 12,
+            ICE: 13
+        };
+
+        const BLOCK_COLORS = {
+            [BLOCK_TYPES.AIR]: '#ffffff',
+            [BLOCK_TYPES.GRASS]: '#2d5016',
+            [BLOCK_TYPES.DIRT]: '#8b6f47',
+            [BLOCK_TYPES.STONE]: '#7f8080',
+            [BLOCK_TYPES.WOOD]: '#6b4423',
+            [BLOCK_TYPES.LEAVES]: '#228b22',
+            [BLOCK_TYPES.SAND]: '#deb887',
+            [BLOCK_TYPES.WATER]: '#1e90ff',
+            [BLOCK_TYPES.COAL]: '#2c2c2c',
+            [BLOCK_TYPES.IRON]: '#c0c0c0',
+            [BLOCK_TYPES.GOLD]: '#ffd700',
+            [BLOCK_TYPES.DIAMOND]: '#00bfff',
+            [BLOCK_TYPES.SNOW]: '#fffafa',
+            [BLOCK_TYPES.ICE]: '#b0e0e6'
+        };
+
+        const BLOCK_NAMES = {
+            [BLOCK_TYPES.AIR]: 'Air',
+            [BLOCK_TYPES.GRASS]: 'Grass',
+            [BLOCK_TYPES.DIRT]: 'Dirt',
+            [BLOCK_TYPES.STONE]: 'Stone',
+            [BLOCK_TYPES.WOOD]: 'Wood',
+            [BLOCK_TYPES.LEAVES]: 'Leaves',
+            [BLOCK_TYPES.SAND]: 'Sand',
+            [BLOCK_TYPES.WATER]: 'Water',
+            [BLOCK_TYPES.COAL]: 'Coal',
+            [BLOCK_TYPES.IRON]: 'Iron',
+            [BLOCK_TYPES.GOLD]: 'Gold',
+            [BLOCK_TYPES.DIAMOND]: 'Diamond',
+            [BLOCK_TYPES.SNOW]: 'Snow',
+            [BLOCK_TYPES.ICE]: 'Ice'
+        };
+
+        const CRAFTING_RECIPES = {
+            'Wood->Planks': { inputs: { [BLOCK_TYPES.WOOD]: 1 }, outputs: { [BLOCK_TYPES.WOOD]: 4 } },
+            'Stone->Brick': { inputs: { [BLOCK_TYPES.STONE]: 4 }, outputs: { [BLOCK_TYPES.STONE]: 1 } },
+            'Coal+Wood->Charcoal': { inputs: { [BLOCK_TYPES.COAL]: 1, [BLOCK_TYPES.WOOD]: 2 }, outputs: { [BLOCK_TYPES.COAL]: 3 } }
+        };
+
+        // Simple Perlin-like noise for terrain generation
+        class NoiseGenerator {
+            constructor(seed = 42) {
+                this.seed = seed;
+                this.permutation = this.generatePermutation(seed);
+            }
+
+            generatePermutation(seed) {
+                const p = [];
+                for (let i = 0; i < 256; i++) {
+                    p[i] = i;
+                }
+                for (let i = 255; i > 0; i--) {
+                    const j = Math.floor((seed * Math.sin(i) * 10000) % (i + 1));
+                    [p[i], p[j]] = [p[j], p[i]];
+                }
+                return p.concat(p);
+            }
+
+            noise(x, y, z = 0) {
+                const xi = Math.floor(x) & 255;
+                const yi = Math.floor(y) & 255;
+                const zi = Math.floor(z) & 255;
+
+                const xf = x - Math.floor(x);
+                const yf = y - Math.floor(y);
+                const zf = z - Math.floor(z);
+
+                const u = this.fade(xf);
+                const v = this.fade(yf);
+                const w = this.fade(zf);
+
+                const p = this.permutation;
+                const aa = p[p[xi] + yi] + zi;
+                const ab = p[p[xi] + yi + 1] + zi;
+                const ba = p[p[xi + 1] + yi] + zi;
+                const bb = p[p[xi + 1] + yi + 1] + zi;
+
+                const aaa = p[aa];
+                const aba = p[ab];
+                const baa = p[ba];
+                const bba = p[bb];
+
+                let x1 = this.lerp(this.grad(aaa, xf, yf, zf), this.grad(baa, xf - 1, yf, zf), u);
+                let x2 = this.lerp(this.grad(aba, xf, yf - 1, zf), this.grad(bba, xf - 1, yf - 1, zf), u);
+                let y1 = this.lerp(x1, x2, v);
+
+                return y1;
+            }
+
+            fade(t) {
+                return t * t * t * (t * (t * 6 - 15) + 10);
+            }
+
+            lerp(t, a, b) {
+                return a + t * (b - a);
+            }
+
+            grad(hash, x, y, z) {
+                const h = hash & 15;
+                const u = h < 8 ? x : y;
+                const v = h < 8 ? y : z;
+                return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+            }
+        }
+
+        class World {
+            constructor(width = 64, height = 64, depth = 32) {
+                this.width = width;
+                this.height = height;
+                this.depth = depth;
+                this.blocks = new Array(width).fill(null).map(() =>
+                    new Array(height).fill(null).map(() =>
+                        new Array(depth).fill(BLOCK_TYPES.AIR)
+                    )
+                );
+                this.noise = new NoiseGenerator(Date.now() % 1000);
+                this.generateTerrain();
+            }
+
+            generateTerrain() {
+                const scale = 20;
+                const heightMap = new Array(this.width).fill(null).map(() => new Array(this.height).fill(0));
+
+                // Generate height map
+                for (let x = 0; x < this.width; x++) {
+                    for (let y = 0; y < this.height; y++) {
+                        const noise1 = this.noise.noise(x / scale, y / scale, 0);
+                        const noise2 = this.noise.noise(x / (scale * 2), y / (scale * 2), 1);
+                        const height = Math.floor((noise1 * 0.7 + noise2 * 0.3 + 1) * 8) + 5;
+                        heightMap[x][y] = Math.max(1, Math.min(this.depth - 2, height));
+                    }
+                }
+
+                // Fill world with blocks based on height
+                for (let x = 0; x < this.width; x++) {
+                    for (let y = 0; y < this.height; y++) {
+                        const height = heightMap[x][y];
+                        for (let z = 0; z < this.depth; z++) {
+                            if (z < height - 3) {
+                                this.blocks[x][y][z] = BLOCK_TYPES.STONE;
+                            } else if (z < height - 1) {
+                                this.blocks[x][y][z] = BLOCK_TYPES.DIRT;
+                            } else if (z < height) {
+                                const biomeNoise = this.noise.noise(x / 30, y / 30, 0);
+                                if (biomeNoise > 0.3) {
+                                    this.blocks[x][y][z] = BLOCK_TYPES.SNOW;
+                                } else if (biomeNoise < -0.3) {
+                                    this.blocks[x][y][z] = BLOCK_TYPES.SAND;
+                                } else {
+                                    this.blocks[x][y][z] = BLOCK_TYPES.GRASS;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Add some trees and ores
+                this.addFeatures(heightMap);
+            }
+
+            addFeatures(heightMap) {
+                // Add trees
+                for (let i = 0; i < Math.floor(this.width * this.height / 200); i++) {
+                    const x = Math.floor(Math.random() * this.width);
+                    const y = Math.floor(Math.random() * this.height);
+                    const h = heightMap[x][y];
+                    if (h > 5 && h < this.depth - 5) {
+                        this.placeTree(x, y, h);
+                    }
+                }
+
+                // Add ores
+                for (let x = 0; x < this.width; x++) {
+                    for (let y = 0; y < this.height; y++) {
+                        for (let z = 0; z < this.depth; z++) {
+                            if (this.blocks[x][y][z] === BLOCK_TYPES.STONE) {
+                                const r = Math.random();
+                                if (r < 0.05) this.blocks[x][y][z] = BLOCK_TYPES.COAL;
+                                else if (r < 0.08) this.blocks[x][y][z] = BLOCK_TYPES.IRON;
+                                else if (r < 0.1) this.blocks[x][y][z] = BLOCK_TYPES.GOLD;
+                                else if (r < 0.11) this.blocks[x][y][z] = BLOCK_TYPES.DIAMOND;
+                            }
+                        }
+                    }
+                }
+            }
+
+            placeTree(x, y, h) {
+                const trunkHeight = 4 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < trunkHeight; i++) {
+                    if (h + i < this.depth) {
+                        this.blocks[x][y][h + i] = BLOCK_TYPES.WOOD;
+                    }
+                }
+                const leafRadius = 2;
+                for (let dx = -leafRadius; dx <= leafRadius; dx++) {
+                    for (let dy = -leafRadius; dy <= leafRadius; dy++) {
+                        for (let dz = 0; dz < 3; dz++) {
+                            const nx = x + dx;
+                            const ny = y + dy;
+                            const nz = h + trunkHeight + dz;
+                            if (nx >= 0 && nx < this.width && ny >= 0 && ny < this.height && nz < this.depth) {
+                                if (Math.abs(dx) + Math.abs(dy) <= leafRadius && Math.random() > 0.2) {
+                                    if (this.blocks[nx][ny][nz] === BLOCK_TYPES.AIR) {
+                                        this.blocks[nx][ny][nz] = BLOCK_TYPES.LEAVES;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            getBlock(x, y, z) {
+                x = Math.floor(x);
+                y = Math.floor(y);
+                z = Math.floor(z);
+                if (x < 0 || x >= this.width || y < 0 || y >= this.height || z < 0 || z >= this.depth) {
+                    return BLOCK_TYPES.AIR;
+                }
+                return this.blocks[x][y][z];
+            }
+
+            setBlock(x, y, z, type) {
+                x = Math.floor(x);
+                y = Math.floor(y);
+                z = Math.floor(z);
+                if (x < 0 || x >= this.width || y < 0 || y >= this.height || z < 0 || z >= this.depth) {
+                    return;
+                }
+                this.blocks[x][y][z] = type;
+            }
+
+            getBiome(x, y) {
+                const biomeNoise = this.noise.noise(x / 30, y / 30, 0);
+                if (biomeNoise > 0.3) return 'Snow';
+                if (biomeNoise < -0.3) return 'Desert';
+                return 'Plains';
+            }
+        }
+
+        class Inventory {
+            constructor() {
+                this.items = new Map();
+                this.maxStackSize = 64;
+                this.selectedSlot = 0;
+            }
+
+            addItem(blockType, count = 1) {
+                if (blockType === BLOCK_TYPES.AIR) return;
+                const current = this.items.get(blockType) || 0;
+                this.items.set(blockType, Math.min(current + count, this.maxStackSize));
+            }
+
+            removeItem(blockType, count = 1) {
+                const current = this.items.get(blockType) || 0;
+                if (current < count) return false;
+                if (current === count) {
+                    this.items.delete(blockType);
+                } else {
+                    this.items.set(blockType, current - count);
+                }
+                return true;
+            }
+
+            getItem(blockType) {
+                return this.items.get(blockType) || 0;
+            }
+
+            getHotbarItems() {
+                const hotbarSize = 9;
+                const items = Array.from(this.items.keys()).slice(0, hotbarSize);
+                while (items.length < hotbarSize) {
+                    items.push(null);
+                }
+                return items;
+            }
+
+            getSelectedItem() {
+                const hotbarItems = this.getHotbarItems();
+                return hotbarItems[this.selectedSlot];
+            }
+        }
+
+        class Player {
+            constructor(x, y, z) {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+                this.vx = 0;
+                this.vy = 0;
+                this.vz = 0;
+                this.pitch = 0;
+                this.yaw = 0;
+                this.speed = 0.2;
+                this.jumpPower = 0.4;
+                this.onGround = false;
+                this.health = 10;
+                this.hunger = 10;
+                this.inventory = new Inventory();
+                this.reach = 6; // Block reach distance
+            }
+
+            update(world, keys, deltaTime) {
+                const moveForward = keys['w'] || keys['W'];
+                const moveBackward = keys['s'] || keys['S'];
+                const moveLeft = keys['a'] || keys['A'];
+                const moveRight = keys['d'] || keys['D'];
+                const jump = keys[' '];
+
+                const dir = {
+                    x: Math.sin(this.yaw),
+                    y: Math.cos(this.yaw),
+                    z: 0
+                };
+
+                const right = {
+                    x: Math.cos(this.yaw),
+                    y: -Math.sin(this.yaw),
+                    z: 0
+                };
+
+                if (moveForward) {
+                    this.vx += dir.x * this.speed;
+                    this.vy += dir.y * this.speed;
+                }
+                if (moveBackward) {
+                    this.vx -= dir.x * this.speed;
+                    this.vy -= dir.y * this.speed;
+                }
+                if (moveLeft) {
+                    this.vx -= right.x * this.speed;
+                    this.vy -= right.y * this.speed;
+                }
+                if (moveRight) {
+                    this.vx += right.x * this.speed;
+                    this.vy += right.y * this.speed;
+                }
+
+                // Gravity
+                this.vz -= 0.01;
+
+                // Apply velocity with collision
+                this.x += this.vx * 0.9;
+                this.y += this.vy * 0.9;
+                this.z += this.vz;
+
+                // Boundary checking
+                this.x = Math.max(0.5, Math.min(world.width - 0.5, this.x));
+                this.y = Math.max(0.5, Math.min(world.height - 0.5, this.y));
+
+                // Ground collision
+                if (this.z <= 0.5) {
+                    this.z = 0.5;
+                    this.vz = 0;
+                    this.onGround = true;
+
+                    if (jump) {
+                        this.vz = this.jumpPower;
+                        this.onGround = false;
+                    }
+                } else {
+                    this.onGround = false;
+                }
+
+                // Simple block collision
+                const blockBelow = world.getBlock(this.x, this.y, Math.floor(this.z - 0.5));
+                if (blockBelow !== BLOCK_TYPES.AIR && blockBelow !== BLOCK_TYPES.WATER) {
+                    this.z = Math.floor(this.z) + 1;
+                    this.vz = 0;
+                    this.onGround = true;
+                }
+
+                // Friction
+                this.vx *= 0.8;
+                this.vy *= 0.8;
+            }
+
+            getRaycastHit(world) {
+                const dir = {
+                    x: Math.sin(this.yaw) * Math.cos(this.pitch),
+                    y: Math.cos(this.yaw) * Math.cos(this.pitch),
+                    z: Math.sin(this.pitch)
+                };
+
+                let x = this.x;
+                let y = this.y;
+                let z = this.z + 1.6; // Eye level
+
+                for (let i = 0; i < this.reach * 2; i++) {
+                    x += dir.x * 0.5;
+                    y += dir.y * 0.5;
+                    z += dir.z * 0.5;
+
+                    const block = world.getBlock(x, y, z);
+                    if (block !== BLOCK_TYPES.AIR) {
+                        return {
+                            x: Math.floor(x),
+                            y: Math.floor(y),
+                            z: Math.floor(z),
+                            block: block
+                        };
+                    }
+                }
+
+                return null;
+            }
+
+            getPlacementPosition(world) {
+                const hit = this.getRaycastHit(world);
+                if (!hit) return null;
+
+                const dir = {
+                    x: Math.sin(this.yaw) * Math.cos(this.pitch),
+                    y: Math.cos(this.yaw) * Math.cos(this.pitch),
+                    z: Math.sin(this.pitch)
+                };
+
+                let x = this.x;
+                let y = this.y;
+                let z = this.z + 1.6;
+
+                for (let i = 0; i < this.reach * 2; i++) {
+                    x += dir.x * 0.5;
+                    y += dir.y * 0.5;
+                    z += dir.z * 0.5;
+                    const block = world.getBlock(x, y, z);
+                    if (block !== BLOCK_TYPES.AIR) {
+                        return { x: Math.floor(x), y: Math.floor(y), z: Math.floor(z) };
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        class Game {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.width = this.canvas.width = window.innerWidth;
+                this.height = this.canvas.height = window.innerHeight - 120;
+
+                this.world = new World(64, 64, 32);
+                this.player = new Player(32, 32, 15);
+                this.keys = {};
+                this.mouse = { x: 0, y: 0, buttons: 0 };
+                this.creativeMode = true;
+                this.paused = false;
+                this.frameCount = 0;
+                this.lastTime = Date.now();
+
+                this.setupEventListeners();
+                this.updateUI();
+                this.showPauseScreen();
+            }
+
+            setupEventListeners() {
+                window.addEventListener('keydown', (e) => {
+                    this.keys[e.key] = true;
+                    if (e.key === 'Escape') this.togglePause();
+                    if (e.key === 'e' || e.key === 'E') this.showInventory();
+                    for (let i = 1; i <= 9; i++) {
+                        if (e.key === i.toString()) {
+                            this.player.inventory.selectedSlot = i - 1;
+                            this.updateHotbar();
+                        }
+                    }
+                });
+
+                window.addEventListener('keyup', (e) => {
+                    this.keys[e.key] = false;
+                });
+
+                window.addEventListener('mousemove', (e) => {
+                    const sensitivity = 0.005;
+                    this.player.yaw -= e.movementX * sensitivity;
+                    this.player.pitch += e.movementY * sensitivity;
+                    this.player.pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.player.pitch));
+
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+
+                window.addEventListener('click', () => {
+                    this.canvas.requestPointerLock();
+                });
+
+                window.addEventListener('mousedown', (e) => {
+                    this.mouse.buttons |= (1 << (e.button - 1));
+                });
+
+                window.addEventListener('mouseup', (e) => {
+                    this.mouse.buttons &= ~(1 << (e.button - 1));
+                });
+
+                window.addEventListener('contextmenu', (e) => e.preventDefault());
+
+                window.addEventListener('resize', () => {
+                    this.width = this.canvas.width = window.innerWidth;
+                    this.height = this.canvas.height = window.innerHeight - 120;
+                });
+
+                // Mining and placing
+                setInterval(() => {
+                    if (!this.paused) {
+                        if ((this.mouse.buttons & 1) === 1) {
+                            this.mineBlock();
+                        }
+                        if ((this.mouse.buttons & 2) === 2) {
+                            this.placeBlock();
+                        }
+                    }
+                }, 100);
+            }
+
+            mineBlock() {
+                const hit = this.player.getRaycastHit(this.world);
+                if (!hit) return;
+
+                const block = this.world.getBlock(hit.x, hit.y, hit.z);
+                if (block !== BLOCK_TYPES.AIR) {
+                    this.world.setBlock(hit.x, hit.y, hit.z, BLOCK_TYPES.AIR);
+                    if (this.creativeMode) {
+                        this.player.inventory.addItem(block, 1);
+                    }
+                }
+            }
+
+            placeBlock() {
+                const selected = this.player.inventory.getSelectedItem();
+                if (selected === null || selected === undefined) return;
+
+                const hit = this.player.getRaycastHit(this.world);
+                if (!hit) return;
+
+                const dir = {
+                    x: Math.sin(this.player.yaw) * Math.cos(this.player.pitch),
+                    y: Math.cos(this.player.yaw) * Math.cos(this.player.pitch),
+                    z: Math.sin(this.player.pitch)
+                };
+
+                let x = this.player.x;
+                let y = this.player.y;
+                let z = this.player.z + 1.6;
+
+                let lastX = Math.floor(x);
+                let lastY = Math.floor(y);
+                let lastZ = Math.floor(z);
+
+                for (let i = 0; i < this.player.reach * 2; i++) {
+                    x += dir.x * 0.5;
+                    y += dir.y * 0.5;
+                    z += dir.z * 0.5;
+
+                    const cx = Math.floor(x);
+                    const cy = Math.floor(y);
+                    const cz = Math.floor(z);
+
+                    if (this.world.getBlock(cx, cy, cz) !== BLOCK_TYPES.AIR) {
+                        this.world.setBlock(lastX, lastY, lastZ, selected);
+                        if (!this.creativeMode) {
+                            this.player.inventory.removeItem(selected, 1);
+                        }
+                        break;
+                    }
+
+                    lastX = cx;
+                    lastY = cy;
+                    lastZ = cz;
+                }
+            }
+
+            modeToggle() {
+                this.creativeMode = !this.creativeMode;
+                document.getElementById('modeToggle').textContent = this.creativeMode ? 'Creative Mode' : 'Survival Mode';
+                this.updateUI();
+            }
+
+            showInventory() {
+                alert('Inventory: ' + Array.from(this.player.inventory.items.entries())
+                    .map(([type, count]) => `${BLOCK_NAMES[type]}: ${count}`)
+                    .join(', ') || 'Empty');
+            }
+
+            togglePause() {
+                this.paused = !this.paused;
+                this.showPauseScreen();
+            }
+
+            unpause() {
+                this.paused = false;
+                document.getElementById('pauseMenu').classList.remove('show');
+                this.canvas.requestPointerLock();
+            }
+
+            showPauseScreen() {
+                const menu = document.getElementById('pauseMenu');
+                if (this.paused) {
+                    menu.classList.add('show');
+                } else {
+                    menu.classList.remove('show');
+                }
+            }
+
+            updateUI() {
+                document.getElementById('healthDisplay').textContent = this.player.health;
+                document.getElementById('hungerDisplay').textContent = this.player.hunger;
+                document.getElementById('biomeDisplay').textContent = this.world.getBiome(this.player.x, this.player.y);
+                this.updateHotbar();
+            }
+
+            updateHotbar() {
+                const hotbarContainer = document.getElementById('hotbar');
+                hotbarContainer.innerHTML = '';
+                const hotbarItems = this.player.inventory.getHotbarItems();
+
+                hotbarItems.forEach((blockType, index) => {
+                    const slot = document.createElement('div');
+                    slot.className = 'hotbar-slot';
+                    if (index === this.player.inventory.selectedSlot) {
+                        slot.classList.add('active');
+                    }
+
+                    if (blockType) {
+                        slot.innerHTML = `<div class="hotbar-item-name">${BLOCK_NAMES[blockType][0]}</div><div class="hotbar-item-count">${this.player.inventory.getItem(blockType)}</div>`;
+                    }
+
+                    slot.addEventListener('click', () => {
+                        this.player.inventory.selectedSlot = index;
+                        this.updateHotbar();
+                    });
+
+                    hotbarContainer.appendChild(slot);
+                });
+            }
+
+            update(deltaTime) {
+                if (!this.paused) {
+                    this.player.update(this.world, this.keys, deltaTime);
+                }
+            }
+
+            render() {
+                this.ctx.fillStyle = 'rgb(135, 206, 235)';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+                // Draw world isometric style
+                this.drawIsometricWorld();
+
+                // Draw HUD crosshair indicator
+                this.drawDebugInfo();
+            }
+
+            drawIsometricWorld() {
+                const tileWidth = 20;
+                const tileHeight = 10;
+                const centerX = this.width / 2;
+                const centerY = this.height / 2;
+
+                const viewDist = 16;
+                const startX = Math.floor(this.player.x) - viewDist;
+                const startY = Math.floor(this.player.y) - viewDist;
+                const endX = Math.floor(this.player.x) + viewDist;
+                const endY = Math.floor(this.player.y) + viewDist;
+
+                // Collect visible blocks with depth sorting
+                const visibleBlocks = [];
+
+                for (let x = startX; x <= endX; x++) {
+                    for (let y = startY; y <= endY; y++) {
+                        for (let z = 0; z < this.world.depth; z++) {
+                            const block = this.world.getBlock(x, y, z);
+                            if (block !== BLOCK_TYPES.AIR) {
+                                const screenX = (x - y) * tileWidth / 2 + centerX;
+                                const screenY = (x + y) * tileHeight / 2 - z * tileHeight + centerY;
+
+                                visibleBlocks.push({
+                                    x, y, z, block,
+                                    screenX, screenY,
+                                    depth: x + y + z
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // Sort by depth for proper rendering
+                visibleBlocks.sort((a, b) => a.depth - b.depth);
+
+                // Draw blocks
+                visibleBlocks.forEach(({ x, y, z, block, screenX, screenY }) => {
+                    const color = BLOCK_COLORS[block];
+                    const darkerColor = this.darkenColor(color, 0.8);
+
+                    // Draw top face
+                    this.ctx.fillStyle = color;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(screenX, screenY);
+                    this.ctx.lineTo(screenX + tileWidth / 2, screenY + tileHeight / 2);
+                    this.ctx.lineTo(screenX, screenY + tileHeight);
+                    this.ctx.lineTo(screenX - tileWidth / 2, screenY + tileHeight / 2);
+                    this.ctx.closePath();
+                    this.ctx.fill();
+
+                    // Draw left face
+                    this.ctx.fillStyle = darkerColor;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(screenX - tileWidth / 2, screenY + tileHeight / 2);
+                    this.ctx.lineTo(screenX - tileWidth / 2, screenY + tileHeight / 2 + tileHeight);
+                    this.ctx.lineTo(screenX, screenY + tileHeight + tileHeight);
+                    this.ctx.lineTo(screenX, screenY + tileHeight);
+                    this.ctx.closePath();
+                    this.ctx.fill();
+
+                    // Draw right face
+                    this.ctx.fillStyle = this.darkenColor(color, 0.9);
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(screenX + tileWidth / 2, screenY + tileHeight / 2);
+                    this.ctx.lineTo(screenX + tileWidth / 2, screenY + tileHeight / 2 + tileHeight);
+                    this.ctx.lineTo(screenX, screenY + tileHeight + tileHeight);
+                    this.ctx.lineTo(screenX, screenY + tileHeight);
+                    this.ctx.closePath();
+                    this.ctx.fill();
+
+                    // Draw border
+                    this.ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+                    this.ctx.lineWidth = 1;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(screenX, screenY);
+                    this.ctx.lineTo(screenX + tileWidth / 2, screenY + tileHeight / 2);
+                    this.ctx.lineTo(screenX, screenY + tileHeight);
+                    this.ctx.lineTo(screenX - tileWidth / 2, screenY + tileHeight / 2);
+                    this.ctx.closePath();
+                    this.ctx.stroke();
+                });
+
+                // Draw player position indicator
+                const playerScreenX = (this.player.x - this.player.y) * tileWidth / 2 + centerX;
+                const playerScreenY = (this.player.x + this.player.y) * tileHeight / 2 - this.player.z * tileHeight + centerY;
+
+                this.ctx.fillStyle = 'rgba(76, 175, 80, 0.8)';
+                this.ctx.beginPath();
+                this.ctx.arc(playerScreenX, playerScreenY, 8, 0, Math.PI * 2);
+                this.ctx.fill();
+
+                this.ctx.strokeStyle = '#4caf50';
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+            }
+
+            darkenColor(color, factor) {
+                const num = parseInt(color.replace('#', ''), 16);
+                const r = Math.floor((num >> 16) * factor);
+                const g = Math.floor(((num >> 8) & 0x00FF) * factor);
+                const b = Math.floor((num & 0x0000FF) * factor);
+                return '#' + (0x1000000 + r * 0x10000 + g * 0x100 + b).toString(16).slice(1);
+            }
+
+            drawDebugInfo() {
+                const info = document.getElementById('debugInfo');
+                const hit = this.player.getRaycastHit(this.world);
+                info.innerHTML = `
+                    <div>Pos: ${this.player.x.toFixed(1)}, ${this.player.y.toFixed(1)}, ${this.player.z.toFixed(1)}</div>
+                    <div>Yaw: ${(this.player.yaw * 180 / Math.PI).toFixed(0)}°</div>
+                    <div>Pitch: ${(this.player.pitch * 180 / Math.PI).toFixed(0)}°</div>
+                    ${hit ? `<div>Looking at: ${BLOCK_NAMES[hit.block]} (${hit.x}, ${hit.y}, ${hit.z})</div>` : '<div>Looking at: Air</div>'}
+                    <div>Mode: ${this.creativeMode ? 'Creative' : 'Survival'}</div>
+                `;
+            }
+
+            gameLoop() {
+                const now = Date.now();
+                const deltaTime = (now - this.lastTime) / 1000;
+                this.lastTime = now;
+
+                this.frameCount++;
+                if (this.frameCount % 30 === 0) {
+                    document.getElementById('fpsCounter').textContent = Math.round(1 / (deltaTime / 30));
+                }
+
+                this.update(deltaTime);
+                this.render();
+                this.updateUI();
+
+                requestAnimationFrame(() => this.gameLoop());
+            }
+
+            start() {
+                this.gameLoop();
+                document.getElementById('modeToggle').addEventListener('click', () => this.modeToggle());
+            }
+        }
+
+        // Initialize game
+        const game = new Game();
+        game.start();
+    </script>
+</body>
+</html>
