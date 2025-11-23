@@ -284,8 +284,8 @@
         let playerSnake = null;
         let aiSnakes = [];
         let foods = [];
-        const NUM_AI_SNAKES = 5;
-        const MAX_FOOD = 40;
+        const NUM_AI_SNAKES = 12;
+        const MAX_FOOD = 60;
 
         // Smooth Snake Class
         class Snake {
@@ -828,7 +828,7 @@
             playerSnake = new Snake(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, playerColor, true);
 
             // Create AI snakes
-            const aiColors = ['#ff6b6b', '#feca57', '#54a0ff', '#5f27cd', '#ff9ff3'];
+            const aiColors = ['#ff6b6b', '#feca57', '#54a0ff', '#5f27cd', '#ff9ff3', '#e74c3c', '#2ecc71', '#9b59b6', '#1abc9c', '#e67e22', '#3498db', '#c0392b'];
             aiSnakes = [];
             for (let i = 0; i < NUM_AI_SNAKES; i++) {
                 const x = 100 + Math.random() * (CANVAS_WIDTH - 200);
