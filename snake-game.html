@@ -222,29 +222,49 @@
                 <span>AI Snakes</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #ff0000;"></div>
-                <span>Apple (10pts)</span>
+                <span>🍒 5pts</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #ffa500;"></div>
-                <span>Orange (15pts)</span>
+                <span>🍎 10pts</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #ffff00;"></div>
-                <span>Banana (20pts)</span>
+                <span>🍓 12pts</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #800080;"></div>
-                <span>Grape (25pts)</span>
+                <span>🍑 14pts</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #00ffff;"></div>
-                <span>Diamond (50pts)</span>
+                <span>🍊 15pts</span>
+            </div>
+            <div class="legend-item">
+                <span>🥝 16pts +2</span>
+            </div>
+            <div class="legend-item">
+                <span>🍌 18pts +2</span>
+            </div>
+            <div class="legend-item">
+                <span>🥭 22pts +2</span>
+            </div>
+            <div class="legend-item">
+                <span>🍇 25pts +2</span>
+            </div>
+            <div class="legend-item">
+                <span>🍍 28pts +3</span>
+            </div>
+            <div class="legend-item">
+                <span>🍉 35pts +3</span>
+            </div>
+            <div class="legend-item">
+                <span>💎 50pts +4</span>
+            </div>
+            <div class="legend-item">
+                <span>⭐ 100pts +5</span>
             </div>
         </div>
 
         <p class="instructions">
-            Use Arrow Keys or WASD to move. Eat food to grow and score points.<br>
+            Use Arrow Keys or WASD to move. Eat food to grow longer and score points!<br>
+            +2/+3/+4/+5 = extra segments gained. Rare fruits give more growth!<br>
             If another snake hits you, they die and drop their food. If you hit another snake, you die!
         </p>
     </div>
@@ -267,11 +287,19 @@
 
         // Food Types with different point values
         const FOOD_TYPES = [
-            { name: 'apple', color: '#ff0000', points: 10, emoji: '🍎', probability: 0.4 },
-            { name: 'orange', color: '#ffa500', points: 15, emoji: '🍊', probability: 0.25 },
-            { name: 'banana', color: '#ffff00', points: 20, emoji: '🍌', probability: 0.2 },
-            { name: 'grape', color: '#800080', points: 25, emoji: '🍇', probability: 0.1 },
-            { name: 'diamond', color: '#00ffff', points: 50, emoji: '💎', probability: 0.05 }
+            { name: 'cherry', color: '#dc143c', points: 5, emoji: '🍒', probability: 0.15, growth: 1 },
+            { name: 'apple', color: '#ff0000', points: 10, emoji: '🍎', probability: 0.18, growth: 1 },
+            { name: 'strawberry', color: '#ff6b9d', points: 12, emoji: '🍓', probability: 0.12, growth: 1 },
+            { name: 'peach', color: '#ffb07c', points: 14, emoji: '🍑', probability: 0.10, growth: 1 },
+            { name: 'orange', color: '#ffa500', points: 15, emoji: '🍊', probability: 0.10, growth: 1 },
+            { name: 'kiwi', color: '#8bc34a', points: 16, emoji: '🥝', probability: 0.08, growth: 2 },
+            { name: 'banana', color: '#ffff00', points: 18, emoji: '🍌', probability: 0.08, growth: 2 },
+            { name: 'mango', color: '#ffcc00', points: 22, emoji: '🥭', probability: 0.06, growth: 2 },
+            { name: 'grape', color: '#800080', points: 25, emoji: '🍇', probability: 0.05, growth: 2 },
+            { name: 'pineapple', color: '#f4d03f', points: 28, emoji: '🍍', probability: 0.03, growth: 3 },
+            { name: 'watermelon', color: '#2ecc71', points: 35, emoji: '🍉', probability: 0.025, growth: 3 },
+            { name: 'diamond', color: '#00ffff', points: 50, emoji: '💎', probability: 0.015, growth: 4 },
+            { name: 'star', color: '#ffd700', points: 100, emoji: '⭐', probability: 0.01, growth: 5 }
         ];
 
         // Game State
@@ -317,6 +345,7 @@
                 this.score = 0;
                 this.moveCounter = 0;
                 this.moveDelay = isPlayer ? 1 : 2; // AI moves slower
+                this.growthPending = 0; // Track pending growth segments
             }
 
             get head() {
@@ -355,12 +384,18 @@
                 return true;
             }
 
-            grow() {
-                // Don't remove tail - snake grows
+            grow(amount = 1) {
+                // Add to pending growth
+                this.growthPending += amount;
             }
 
             shrink() {
-                this.body.pop();
+                // Only shrink if no pending growth
+                if (this.growthPending > 0) {
+                    this.growthPending--;
+                } else {
+                    this.body.pop();
+                }
             }
 
             checkSelfCollision() {
@@ -715,7 +750,7 @@
                 for (let i = foods.length - 1; i >= 0; i--) {
                     if (playerSnake.head.x === foods[i].x && playerSnake.head.y === foods[i].y) {
                         const food = foods.splice(i, 1)[0];
-                        playerSnake.grow();
+                        playerSnake.grow(food.type.growth || 1);
                         playerSnake.eatenFood.push(food.type);
                         score += food.type.points;
                         updateScoreDisplay();
@@ -755,7 +790,7 @@
                 for (let j = foods.length - 1; j >= 0; j--) {
                     if (snake.head.x === foods[j].x && snake.head.y === foods[j].y) {
                         const food = foods.splice(j, 1)[0];
-                        snake.grow();
+                        snake.grow(food.type.growth || 1);
                         snake.eatenFood.push(food.type);
                         snake.score += food.type.points;
                     }
@@ -830,6 +865,7 @@
             snake.alive = true;
             snake.eatenFood = [];
             snake.score = 0;
+            snake.growthPending = 0;
             snake.respawnTimer = null;
         }
 
