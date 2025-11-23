@@ -820,8 +820,12 @@
             canvas = document.getElementById('gameCanvas');
             ctx = canvas.getContext('2d');
 
-            // Create player snake
-            playerSnake = new Snake(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, '#00ff88', true);
+            // Random player colors
+            const playerColors = ['#00ff88', '#ff6b6b', '#feca57', '#54a0ff', '#ff9ff3', '#00ffff', '#ff00ff', '#ffff00', '#ff8c00', '#7cfc00'];
+            const playerColor = playerColors[Math.floor(Math.random() * playerColors.length)];
+
+            // Create player snake with random color
+            playerSnake = new Snake(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, playerColor, true);
 
             // Create AI snakes
             const aiColors = ['#ff6b6b', '#feca57', '#54a0ff', '#5f27cd', '#ff9ff3'];
