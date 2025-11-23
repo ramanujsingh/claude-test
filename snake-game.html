@@ -263,7 +263,7 @@
         </div>
 
         <p class="instructions">
-            Use Arrow Keys or WASD to move. Eat food to grow longer and score points!<br>
+            Move your mouse over the game to control the snake! (Arrow keys/WASD also work)<br>
             +2/+3/+4/+5 = extra segments gained. Rare fruits give more growth!<br>
             If another snake hits you, they die and drop their food. If you hit another snake, you die!
         </p>
@@ -308,6 +308,11 @@
         let gameLoop;
         let score = 0;
         let kills = 0;
+
+        // Mouse position for mouse control
+        let mouseX = 0;
+        let mouseY = 0;
+        let useMouseControl = true;
 
         // Player Snake
         let playerSnake = null;
@@ -578,6 +583,36 @@
             }
         }
 
+        // Update player direction based on mouse position
+        function updatePlayerMouseDirection() {
+            if (!useMouseControl || !playerSnake || !playerSnake.alive) return;
+
+            // Convert mouse position to grid coordinates
+            const targetX = Math.floor(mouseX / GRID_SIZE);
+            const targetY = Math.floor(mouseY / GRID_SIZE);
+
+            // Calculate difference from snake head
+            const dx = targetX - playerSnake.head.x;
+            const dy = targetY - playerSnake.head.y;
+
+            // Determine best direction based on mouse position
+            if (Math.abs(dx) > Math.abs(dy)) {
+                // Horizontal movement preferred
+                if (dx > 0) {
+                    playerSnake.setDirection(DIRECTIONS.RIGHT);
+                } else if (dx < 0) {
+                    playerSnake.setDirection(DIRECTIONS.LEFT);
+                }
+            } else {
+                // Vertical movement preferred
+                if (dy > 0) {
+                    playerSnake.setDirection(DIRECTIONS.DOWN);
+                } else if (dy < 0) {
+                    playerSnake.setDirection(DIRECTIONS.UP);
+                }
+            }
+        }
+
         // Get random food type based on probability
         function getRandomFoodType() {
             const rand = Math.random();
@@ -712,6 +747,9 @@
         // Main game update
         function update() {
             if (!gameRunning) return;
+
+            // Update player direction based on mouse
+            updatePlayerMouseDirection();
 
             // Update AI snakes
             for (const snake of aiSnakes) {
@@ -1005,6 +1043,22 @@
         // Button handlers
         document.getElementById('startBtn').addEventListener('click', startGame);
         document.getElementById('restartBtn').addEventListener('click', restartGame);
+
+        // Mouse controls
+        document.getElementById('gameCanvas').addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+        });
+
+        // Touch controls for mobile
+        document.getElementById('gameCanvas').addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            mouseX = touch.clientX - rect.left;
+            mouseY = touch.clientY - rect.top;
+        });
 
         // Initial render
         window.onload = () => {
