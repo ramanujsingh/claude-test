@@ -339,31 +339,39 @@
 
                 this.angle += angleDiff * TURN_SPEED;
 
-                // Move head
-                const newHead = {
-                    x: this.head.x + Math.cos(this.angle) * this.speed,
-                    y: this.head.y + Math.sin(this.angle) * this.speed
-                };
+                // Move head forward
+                this.segments[0].x += Math.cos(this.angle) * this.speed;
+                this.segments[0].y += Math.sin(this.angle) * this.speed;
 
                 // Wrap around edges smoothly
-                if (newHead.x < 0) newHead.x = CANVAS_WIDTH;
-                if (newHead.x > CANVAS_WIDTH) newHead.x = 0;
-                if (newHead.y < 0) newHead.y = CANVAS_HEIGHT;
-                if (newHead.y > CANVAS_HEIGHT) newHead.y = 0;
+                if (this.segments[0].x < 0) this.segments[0].x = CANVAS_WIDTH;
+                if (this.segments[0].x > CANVAS_WIDTH) this.segments[0].x = 0;
+                if (this.segments[0].y < 0) this.segments[0].y = CANVAS_HEIGHT;
+                if (this.segments[0].y > CANVAS_HEIGHT) this.segments[0].y = 0;
 
-                // Add new head
-                this.segments.unshift(newHead);
+                // Each segment follows the one in front of it
+                for (let i = 1; i < this.segments.length; i++) {
+                    const current = this.segments[i];
+                    const target = this.segments[i - 1];
 
-                // Remove tail to maintain length
-                while (this.segments.length > this.length) {
-                    this.segments.pop();
+                    const dx = target.x - current.x;
+                    const dy = target.y - current.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    // Only move if too far from target
+                    if (dist > SEGMENT_SPACING) {
+                        const moveX = (dx / dist) * (dist - SEGMENT_SPACING);
+                        const moveY = (dy / dist) * (dist - SEGMENT_SPACING);
+                        current.x += moveX;
+                        current.y += moveY;
+                    }
                 }
             }
 
             grow(amount) {
-                // Add segments at the tail
-                const tail = this.segments[this.segments.length - 1];
+                // Add segments that will naturally spread out as snake moves
                 for (let i = 0; i < amount; i++) {
+                    const tail = this.segments[this.segments.length - 1];
                     this.segments.push({ x: tail.x, y: tail.y });
                 }
             }
@@ -617,18 +625,6 @@
                         killSnake(aiSnake);
                         kills++;
                         updateScoreDisplay();
-                    }
-                }
-
-                // Player self-collision (skip first 20 segments)
-                for (let i = 20; i < playerSnake.segments.length; i++) {
-                    const segment = playerSnake.segments[i];
-                    const dx = playerSnake.head.x - segment.x;
-                    const dy = playerSnake.head.y - segment.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < playerSnake.radius) {
-                        killSnake(playerSnake);
-                        break;
                     }
                 }
             }
