@@ -33,7 +33,7 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            max-width: 800px;
+            max-width: 1200px;
             padding: 0 20px;
         }
 
@@ -117,7 +117,7 @@
             gap: 20px;
             flex-wrap: wrap;
             justify-content: center;
-            max-width: 800px;
+            max-width: 1200px;
         }
 
         .legend-item {
@@ -205,7 +205,7 @@
             </div>
         </div>
 
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <canvas id="gameCanvas" width="1200" height="800"></canvas>
 
         <div class="controls">
             <button class="btn-start" id="startBtn">Start Game</button>
@@ -279,8 +279,8 @@
 
     <script>
         // Game Constants
-        const CANVAS_WIDTH = 800;
-        const CANVAS_HEIGHT = 600;
+        const CANVAS_WIDTH = 1200;
+        const CANVAS_HEIGHT = 800;
         const GRID_SIZE = 20;
         const COLS = CANVAS_WIDTH / GRID_SIZE;
         const ROWS = CANVAS_HEIGHT / GRID_SIZE;
@@ -306,8 +306,12 @@
         let canvas, ctx;
         let gameRunning = false;
         let gameLoop;
+        let animationId;
         let score = 0;
         let kills = 0;
+        let lastUpdateTime = 0;
+        let updateInterval = 120; // ms between game logic updates
+        let interpolation = 0; // 0 to 1, for smooth rendering
 
         // Mouse position for mouse control
         let mouseX = 0;
@@ -351,6 +355,7 @@
                 this.moveCounter = 0;
                 this.moveDelay = isPlayer ? 1 : 2; // AI moves slower
                 this.growthPending = 0; // Track pending growth segments
+                this.prevBody = JSON.parse(JSON.stringify(this.body)); // For interpolation
             }
 
             get head() {
@@ -371,6 +376,9 @@
                     return false;
                 }
                 this.moveCounter = 0;
+
+                // Store previous positions for interpolation
+                this.prevBody = JSON.parse(JSON.stringify(this.body));
 
                 this.direction = this.nextDirection;
 
@@ -412,10 +420,26 @@
                 return false;
             }
 
-            draw(ctx) {
+            draw(ctx, t = 1) {
                 if (!this.alive) return;
 
                 const centerOffset = GRID_SIZE / 2;
+
+                // Get interpolated positions
+                const getInterpolatedPos = (i) => {
+                    const current = this.body[i];
+                    const prev = this.prevBody[i] || current;
+
+                    // Don't interpolate if wrapped around screen
+                    if (Math.abs(current.x - prev.x) > 1 || Math.abs(current.y - prev.y) > 1) {
+                        return { x: current.x, y: current.y };
+                    }
+
+                    return {
+                        x: prev.x + (current.x - prev.x) * t,
+                        y: prev.y + (current.y - prev.y) * t
+                    };
+                };
 
                 // Draw connecting lines between segments for smooth look
                 ctx.strokeStyle = this.color;
@@ -423,11 +447,11 @@
                 ctx.lineJoin = 'round';
 
                 for (let i = 0; i < this.body.length - 1; i++) {
-                    const current = this.body[i];
-                    const next = this.body[i + 1];
+                    const current = getInterpolatedPos(i);
+                    const next = getInterpolatedPos(i + 1);
 
                     // Skip if segments are far apart (wrapped around screen)
-                    if (Math.abs(current.x - next.x) > 1 || Math.abs(current.y - next.y) > 1) continue;
+                    if (Math.abs(current.x - next.x) > 2 || Math.abs(current.y - next.y) > 2) continue;
 
                     const alpha = 0.6 + (0.4 * (this.body.length - i) / this.body.length);
                     ctx.globalAlpha = alpha;
@@ -442,7 +466,7 @@
 
                 // Draw circular body segments
                 for (let i = this.body.length - 1; i >= 0; i--) {
-                    const segment = this.body[i];
+                    const segment = getInterpolatedPos(i);
                     const isHead = i === 0;
                     const alpha = 0.6 + (0.4 * (this.body.length - i) / this.body.length);
                     const radius = isHead ? (GRID_SIZE / 2) - 1 : (GRID_SIZE / 2) - 2;
@@ -910,6 +934,7 @@
                 { x: startX - 1, y: startY },
                 { x: startX - 2, y: startY }
             ];
+            snake.prevBody = JSON.parse(JSON.stringify(snake.body));
             snake.direction = DIRECTIONS.RIGHT;
             snake.nextDirection = DIRECTIONS.RIGHT;
             snake.alive = true;
@@ -919,8 +944,8 @@
             snake.respawnTimer = null;
         }
 
-        // Render
-        function render() {
+        // Render with interpolation
+        function render(t = 1) {
             // Clear canvas
             ctx.fillStyle = '#0a0a15';
             ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -933,19 +958,36 @@
 
             // Draw AI snakes
             for (const snake of aiSnakes) {
-                snake.draw(ctx);
+                snake.draw(ctx, t);
             }
 
             // Draw player (on top)
             if (playerSnake) {
-                playerSnake.draw(ctx);
+                playerSnake.draw(ctx, t);
             }
         }
 
-        // Game loop
-        function gameLoopFn() {
-            update();
-            render();
+        // Smooth game loop using requestAnimationFrame
+        function gameLoopFn(currentTime) {
+            if (!gameRunning) return;
+
+            // Calculate time since last update
+            const elapsed = currentTime - lastUpdateTime;
+
+            // Update game logic at fixed intervals
+            if (elapsed >= updateInterval) {
+                update();
+                lastUpdateTime = currentTime;
+            }
+
+            // Calculate interpolation (0 to 1)
+            const t = Math.min(elapsed / updateInterval, 1);
+
+            // Render with interpolation
+            render(t);
+
+            // Request next frame
+            animationId = requestAnimationFrame(gameLoopFn);
         }
 
         // Update score display
@@ -958,7 +1000,9 @@
         // Game over
         function gameOver() {
             gameRunning = false;
-            clearInterval(gameLoop);
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
 
             document.getElementById('finalScore').textContent = score;
             document.getElementById('gameOverOverlay').style.display = 'flex';
@@ -1003,7 +1047,8 @@
             document.getElementById('startBtn').style.display = 'none';
             document.getElementById('restartBtn').style.display = 'inline-block';
 
-            gameLoop = setInterval(gameLoopFn, 200); // Even slower for easier control
+            lastUpdateTime = performance.now();
+            animationId = requestAnimationFrame(gameLoopFn);
         }
 
         // Restart game
