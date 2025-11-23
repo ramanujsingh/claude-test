@@ -415,74 +415,86 @@
             draw(ctx) {
                 if (!this.alive) return;
 
-                // Draw body
+                const centerOffset = GRID_SIZE / 2;
+
+                // Draw connecting lines between segments for smooth look
+                ctx.strokeStyle = this.color;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                for (let i = 0; i < this.body.length - 1; i++) {
+                    const current = this.body[i];
+                    const next = this.body[i + 1];
+
+                    // Skip if segments are far apart (wrapped around screen)
+                    if (Math.abs(current.x - next.x) > 1 || Math.abs(current.y - next.y) > 1) continue;
+
+                    const alpha = 0.6 + (0.4 * (this.body.length - i) / this.body.length);
+                    ctx.globalAlpha = alpha;
+                    ctx.lineWidth = GRID_SIZE - 4;
+
+                    ctx.beginPath();
+                    ctx.moveTo(current.x * GRID_SIZE + centerOffset, current.y * GRID_SIZE + centerOffset);
+                    ctx.lineTo(next.x * GRID_SIZE + centerOffset, next.y * GRID_SIZE + centerOffset);
+                    ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+
+                // Draw circular body segments
                 for (let i = this.body.length - 1; i >= 0; i--) {
                     const segment = this.body[i];
                     const isHead = i === 0;
+                    const alpha = 0.6 + (0.4 * (this.body.length - i) / this.body.length);
+                    const radius = isHead ? (GRID_SIZE / 2) - 1 : (GRID_SIZE / 2) - 2;
 
-                    // Gradient effect for body
-                    const alpha = 0.5 + (0.5 * (this.body.length - i) / this.body.length);
+                    ctx.globalAlpha = isHead ? 1 : alpha;
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(
+                        segment.x * GRID_SIZE + centerOffset,
+                        segment.y * GRID_SIZE + centerOffset,
+                        radius,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fill();
 
                     if (isHead) {
-                        // Draw head with eyes
-                        ctx.fillStyle = this.color;
-                        ctx.beginPath();
-                        ctx.roundRect(
-                            segment.x * GRID_SIZE + 1,
-                            segment.y * GRID_SIZE + 1,
-                            GRID_SIZE - 2,
-                            GRID_SIZE - 2,
-                            5
-                        );
-                        ctx.fill();
-
-                        // Eyes
+                        // Draw eyes on head
                         ctx.fillStyle = '#fff';
-                        const eyeOffsetX = this.direction.x * 3;
-                        const eyeOffsetY = this.direction.y * 3;
+                        const eyeOffsetX = this.direction.x * 4;
+                        const eyeOffsetY = this.direction.y * 4;
+
+                        // Position eyes based on direction
+                        let eye1X, eye1Y, eye2X, eye2Y;
+                        if (this.direction.x !== 0) {
+                            // Moving horizontally
+                            eye1X = segment.x * GRID_SIZE + centerOffset + eyeOffsetX;
+                            eye1Y = segment.y * GRID_SIZE + centerOffset - 4;
+                            eye2X = segment.x * GRID_SIZE + centerOffset + eyeOffsetX;
+                            eye2Y = segment.y * GRID_SIZE + centerOffset + 4;
+                        } else {
+                            // Moving vertically
+                            eye1X = segment.x * GRID_SIZE + centerOffset - 4;
+                            eye1Y = segment.y * GRID_SIZE + centerOffset + eyeOffsetY;
+                            eye2X = segment.x * GRID_SIZE + centerOffset + 4;
+                            eye2Y = segment.y * GRID_SIZE + centerOffset + eyeOffsetY;
+                        }
+
                         ctx.beginPath();
-                        ctx.arc(
-                            segment.x * GRID_SIZE + 7 + eyeOffsetX,
-                            segment.y * GRID_SIZE + 7 + eyeOffsetY,
-                            3, 0, Math.PI * 2
-                        );
-                        ctx.arc(
-                            segment.x * GRID_SIZE + 13 + eyeOffsetX,
-                            segment.y * GRID_SIZE + 7 + eyeOffsetY,
-                            3, 0, Math.PI * 2
-                        );
+                        ctx.arc(eye1X, eye1Y, 3, 0, Math.PI * 2);
+                        ctx.arc(eye2X, eye2Y, 3, 0, Math.PI * 2);
                         ctx.fill();
 
                         // Pupils
                         ctx.fillStyle = '#000';
                         ctx.beginPath();
-                        ctx.arc(
-                            segment.x * GRID_SIZE + 7 + eyeOffsetX + this.direction.x,
-                            segment.y * GRID_SIZE + 7 + eyeOffsetY + this.direction.y,
-                            1.5, 0, Math.PI * 2
-                        );
-                        ctx.arc(
-                            segment.x * GRID_SIZE + 13 + eyeOffsetX + this.direction.x,
-                            segment.y * GRID_SIZE + 7 + eyeOffsetY + this.direction.y,
-                            1.5, 0, Math.PI * 2
-                        );
+                        ctx.arc(eye1X + this.direction.x, eye1Y + this.direction.y, 1.5, 0, Math.PI * 2);
+                        ctx.arc(eye2X + this.direction.x, eye2Y + this.direction.y, 1.5, 0, Math.PI * 2);
                         ctx.fill();
-                    } else {
-                        // Body segment
-                        ctx.fillStyle = this.color;
-                        ctx.globalAlpha = alpha;
-                        ctx.beginPath();
-                        ctx.roundRect(
-                            segment.x * GRID_SIZE + 2,
-                            segment.y * GRID_SIZE + 2,
-                            GRID_SIZE - 4,
-                            GRID_SIZE - 4,
-                            4
-                        );
-                        ctx.fill();
-                        ctx.globalAlpha = 1;
                     }
                 }
+                ctx.globalAlpha = 1;
             }
 
             dropFood() {
