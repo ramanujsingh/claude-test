@@ -409,11 +409,21 @@
                     const segment = this.segments[i];
                     const isHead = i === 0;
 
-                    // Size variation - head is bigger
-                    const size = isHead ? this.radius : this.radius * 0.85;
+                    // Size variation - head is bigger, player is slightly bigger
+                    const baseSize = this.isPlayer ? this.radius * 1.1 : this.radius;
+                    const size = isHead ? baseSize : baseSize * 0.85;
 
                     // Alpha gradient from tail to head
                     const alpha = 0.4 + (0.6 * (this.segments.length - i) / this.segments.length);
+
+                    // Player gets a white outline glow
+                    if (this.isPlayer) {
+                        ctx.globalAlpha = alpha * 0.5;
+                        ctx.fillStyle = '#ffffff';
+                        ctx.beginPath();
+                        ctx.arc(segment.x, segment.y, size + 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
 
                     ctx.globalAlpha = alpha;
                     ctx.fillStyle = this.color;
