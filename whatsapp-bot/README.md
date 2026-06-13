@@ -92,10 +92,14 @@ journalctl -u samarapix-bot -f           # watch logs live
 
 (Prefer `pm2`? `npm i -g pm2 && pm2 start src/index.js --name samarapix-bot && pm2 save && pm2 startup` works too.)
 
-### 4. Reach the dashboard from your laptop
+### 4. Approve escalations
 
-The dashboard binds to `127.0.0.1` on the server (it is **not** exposed to the
-internet). Open an SSH tunnel from your own machine:
+**Easiest on a server: use Telegram** (see "Approvals in Telegram" below). You
+approve from your phone with no tunnel and no open ports — ideal for a headless
+box. Set `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` in `.env` and you're done.
+
+If you'd rather use the web dashboard, it binds to `127.0.0.1` on the server (it
+is **not** exposed to the internet). Open an SSH tunnel from your own machine:
 
 ```bash
 ssh -N -L 3000:localhost:3000 youruser@your-server-ip
@@ -131,6 +135,28 @@ Tuning knobs (in `.env`):
 
 ---
 
+## Approvals in Telegram (recommended)
+
+Since you drive your server from Telegram, this is the nicest approval path —
+no SSH tunnel, works from your phone.
+
+**Set it up:**
+
+1. On Telegram, message **@BotFather** → `/newbot` → follow prompts → copy the **token**.
+2. In `.env`, set `TELEGRAM_BOT_TOKEN=<token>` and leave `TELEGRAM_CHAT_ID` blank.
+3. Start the bot (`npm start`), then **send your new bot any message** — it replies with your chat id.
+4. Paste that id into `TELEGRAM_CHAT_ID` and restart.
+
+**How you use it:** when the bot escalates, you get a Telegram message with the
+customer's text and a suggested reply, plus two buttons:
+
+- **✅ Send as-is** — sends the suggested reply to the customer.
+- **🗑 Dismiss** — drops it (you'll handle it yourself).
+- **Reply to the message** with your own text — sends *your* wording to the customer instead.
+
+Only your configured chat id can approve. If Telegram is unset, escalations fall
+back to a WhatsApp forward + the web dashboard below.
+
 ## The review dashboard
 
 Open the dashboard URL. Escalated messages appear as cards with the customer's
@@ -146,6 +172,7 @@ You also get a copy of every escalation forwarded to your own WhatsApp number.
 |---|---|
 | `src/business.js` | Your packages, prices, policies, escalation rules. **Edit this.** |
 | `src/claude.js` | Builds the prompt + structured-output schema; returns the decision. |
+| `src/telegram.js` | Telegram escalation + approval (Send/Dismiss buttons, reply-to-correct). |
 | `src/index.js` | WhatsApp client, message handler, escalation, review dashboard. |
 | `src/queue.js` | File-backed review queue (`review-queue.json`). |
 

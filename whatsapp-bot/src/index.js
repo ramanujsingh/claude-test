@@ -18,12 +18,15 @@ import qrcode from "qrcode-terminal";
 import express from "express";
 
 import { decide } from "./claude.js";
+import { createTelegram } from "./telegram.js";
 import * as queue from "./queue.js";
 
 const OWNER = process.env.OWNER_NUMBER;
 const THRESHOLD = Number(process.env.CONFIDENCE_THRESHOLD ?? 0.75);
 const APPROVAL_MODE = String(process.env.APPROVAL_MODE ?? "true") === "true";
 const REVIEW_PORT = Number(process.env.REVIEW_PORT ?? 3000);
+const TG_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TG_CHAT = process.env.TELEGRAM_CHAT_ID;
 
 if (!OWNER) {
   console.error("Set OWNER_NUMBER in .env (e.g. 919876543210@c.us)");
@@ -47,6 +50,26 @@ const client = new Client({
   puppeteer: { args: ["--no-sandbox", "--disable-setuid-sandbox"] },
 });
 
+// --- Telegram approval channel (optional) ------------------------------------
+// Enabled when TELEGRAM_BOT_TOKEN is set. onSend sends the approved text to the
+// customer via WhatsApp. Returns true on success so the queue can be updated.
+const telegram = TG_TOKEN
+  ? createTelegram({
+      botToken: TG_TOKEN,
+      chatId: TG_CHAT,
+      onSend: async (item, text) => {
+        try {
+          await client.sendMessage(item.chatId, text);
+          remember(item.chatId, "assistant", text);
+          return true;
+        } catch (err) {
+          console.error("WhatsApp send failed:", err.message);
+          return false;
+        }
+      },
+    })
+  : null;
+
 client.on("qr", (qr) => {
   console.log("\nScan this QR with WhatsApp → Linked devices:\n");
   qrcode.generate(qr, { small: true });
@@ -55,7 +78,9 @@ client.on("qr", (qr) => {
 client.on("ready", () => {
   console.log("✅ WhatsApp connected. Listening for messages.");
   console.log(`   Mode: ${APPROVAL_MODE ? "APPROVAL (nothing auto-sent)" : "AUTO-REPLY"}`);
+  console.log(`   Escalations via: ${telegram ? "Telegram" : "WhatsApp forward"}`);
   console.log(`   Review dashboard: http://localhost:${REVIEW_PORT}\n`);
+  if (telegram) telegram.start();
 });
 
 client.on("message", async (msg) => {
@@ -98,6 +123,19 @@ client.on("message", async (msg) => {
 
 async function escalate(chatId, incoming, draft, reason, category) {
   const item = queue.enqueue({ chatId, customer: chatId, incoming, draft, reason, category });
+
+  // Prefer Telegram (approve/reply right there). Fall back to a WhatsApp
+  // self-forward + the web dashboard if Telegram isn't configured or fails.
+  if (telegram) {
+    try {
+      const messageId = await telegram.notify(item);
+      if (messageId) queue.update(item.id, { telegramMessageId: messageId });
+      return;
+    } catch (err) {
+      console.error("Telegram notify failed, falling back to WhatsApp:", err.message);
+    }
+  }
+
   const note =
     `🔔 *Needs you* (${category})\n` +
     `From: ${chatId}\n` +
