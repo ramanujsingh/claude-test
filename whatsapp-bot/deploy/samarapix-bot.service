@@ -1,0 +1,27 @@
+# systemd unit to keep the bot running and restart it on crash/reboot.
+#
+# 1. Edit User= and WorkingDirectory= to match your server (whoami / pwd).
+# 2. sudo cp deploy/samarapix-bot.service /etc/systemd/system/
+# 3. sudo systemctl daemon-reload
+# 4. sudo systemctl enable --now samarapix-bot
+#
+# IMPORTANT: scan the WhatsApp QR ONCE in the foreground first (`npm start`),
+# so the session is saved in .wwebjs_auth/. Only then start the service — it
+# reuses that saved session and won't print a scannable QR via journalctl.
+
+[Unit]
+Description=samarapix WhatsApp auto-reply bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/claude-test/whatsapp-bot
+ExecStart=/usr/bin/node src/index.js
+Restart=on-failure
+RestartSec=5
+# .env is loaded by the app (dotenv) from WorkingDirectory.
+
+[Install]
+WantedBy=multi-user.target

@@ -46,6 +46,72 @@ When it's connected you'll see the review dashboard URL (default
 
 ---
 
+## Running on a headless Ubuntu server
+
+No screen, no browser — so the two tricky parts are installing Chromium's
+libraries and scanning the QR over SSH. Here's the whole flow.
+
+### 1. Get the code + install everything
+
+```bash
+# on the server
+git clone <your-repo-url> claude-test
+cd claude-test/whatsapp-bot
+bash deploy/setup-ubuntu.sh        # installs Node 22 + Chromium libs + npm deps
+cp .env.example .env && nano .env  # add ANTHROPIC_API_KEY, OWNER_NUMBER, etc.
+```
+
+`setup-ubuntu.sh` installs the shared libraries headless Chromium needs (the
+`libnss3` / `libgbm1` / `libatk` family) — without them Puppeteer fails to launch
+with a cryptic "Failed to launch the browser process" error.
+
+### 2. Scan the QR — once, in the foreground
+
+```bash
+npm start
+```
+
+The QR prints as text blocks right in your SSH terminal — scan it with the
+phone (WhatsApp → Linked devices). The session saves to `.wwebjs_auth/`, so you
+only do this once. Press `Ctrl+C` after you see `✅ WhatsApp connected`.
+
+> If the QR looks mangled in your terminal, make the SSH window wider/zoom out —
+> the block characters need room. PuTTY/Windows Terminal both render it fine.
+
+### 3. Keep it running with systemd
+
+So it survives crashes, logout, and reboots:
+
+```bash
+nano deploy/samarapix-bot.service        # set User= and WorkingDirectory= to match your server
+sudo cp deploy/samarapix-bot.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now samarapix-bot
+journalctl -u samarapix-bot -f           # watch logs live
+```
+
+(Prefer `pm2`? `npm i -g pm2 && pm2 start src/index.js --name samarapix-bot && pm2 save && pm2 startup` works too.)
+
+### 4. Reach the dashboard from your laptop
+
+The dashboard binds to `127.0.0.1` on the server (it is **not** exposed to the
+internet). Open an SSH tunnel from your own machine:
+
+```bash
+ssh -N -L 3000:localhost:3000 youruser@your-server-ip
+```
+
+Then open `http://localhost:3000` in your laptop's browser. Approvals you click
+there are sent through the bot running on the server.
+
+### Notes for a server
+
+- **Don't expose port 3000 publicly** and don't open it in the firewall — the SSH tunnel is the access path. (Anyone who reaches the dashboard can send messages as you.)
+- The phone whose number you linked must stay online occasionally — WhatsApp Web sessions are tied to it.
+- Keep `.env`, `.wwebjs_auth/`, and `review-queue.json` on the server only; they're already git-ignored.
+
+---
+
 ## How it decides
 
 `src/business.js` is the **single source of truth** — packages, prices, hours,

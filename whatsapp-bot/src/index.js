@@ -173,6 +173,8 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 }
 
-app.listen(REVIEW_PORT, () => {});
+// Bind to localhost only — reach the dashboard from your laptop via an SSH
+// tunnel (see README), never expose it directly to the internet.
+app.listen(REVIEW_PORT, "127.0.0.1", () => {});
 
 client.initialize();
